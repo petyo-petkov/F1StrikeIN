@@ -8,7 +8,7 @@ import androidx.compose.ui.window.rememberWindowState
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        state = rememberWindowState( width = 1400.dp, height = 860.dp),
+        state = rememberWindowState( width = 1400.dp, height = 900.dp),
         title = "F1StrikeIN",
     ) {
         App()
