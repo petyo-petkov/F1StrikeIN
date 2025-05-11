@@ -20,11 +20,13 @@ fun EventData(
     modifier: Modifier = Modifier,
     evento: Sessions?,
     drivers: List<DriverInfo>?,
+    onRefresh: () -> Unit,
+    isRefreshing: Boolean,
 ) {
 
     Card(
         modifier = modifier.fillMaxSize(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(2.dp, color = MaterialTheme.colorScheme.primary),
     ) {
         Column(
@@ -34,8 +36,9 @@ fun EventData(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Header(evento)
-            HorizontalDivider()
-            Data(drivers)
+            HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.primary)
+            Data(drivers, onRefresh, isRefreshing)
+
         }
 
     }

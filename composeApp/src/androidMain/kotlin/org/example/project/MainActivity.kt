@@ -11,7 +11,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme {
+            MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
                 App()
             }
         }

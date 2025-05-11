@@ -5,21 +5,23 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.example.project.network.F1ApiClient
 import org.example.project.presentation.DataScreenUIState
 import org.example.project.presentation.DataScreenViewModel
 import org.example.project.presentation.EventData
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(
     apiClient: F1ApiClient = F1ApiClient(),
@@ -28,8 +30,10 @@ fun App(
 ) {
 
     val vm = DataScreenViewModel(apiClient)
-    val evento by vm.sessionInfo.collectAsState()
-    val uiState by vm.uiState.collectAsState()
+
+    val evento by vm.sessionInfo.collectAsStateWithLifecycle()
+    val uiState by vm.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by vm.isRefreshing.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = Unit) {
         vm.getSessionData(sessionKey, meetingKey)
@@ -38,8 +42,9 @@ fun App(
 
     Scaffold(
         modifier = Modifier.fillMaxSize().padding(6.dp),
-        contentWindowInsets = WindowInsets.statusBars
-    ) { paddingValues ->
+        contentWindowInsets = WindowInsets.safeDrawing,
+
+        ) { paddingValues ->
 
         Column(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
@@ -52,8 +57,11 @@ fun App(
                 is DataScreenUIState.Error -> "Error Grave"
                 is DataScreenUIState.Success -> EventData(
                     drivers = (uiState as DataScreenUIState.Success).driverInfoList,
-                    evento = evento.firstOrNull()
+                    evento = evento.firstOrNull(),
+                    onRefresh = vm::refreshData,
+                    isRefreshing = isRefreshing
                 )
+
 
             }
         }

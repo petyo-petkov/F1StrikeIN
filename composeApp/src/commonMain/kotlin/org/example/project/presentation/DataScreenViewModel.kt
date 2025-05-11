@@ -7,6 +7,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
@@ -28,10 +29,23 @@ class DataScreenViewModel(
     private val _sessionInfo = MutableStateFlow<List<Sessions>>(emptyList())
     val sessionInfo: StateFlow<List<Sessions>> = _sessionInfo
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
+    fun refreshData() {
+        _isRefreshing.update { true }
+        viewModelScope.launch {
+            apiClient.refresh()
+            _isRefreshing.update { false }
+        }
+
+    }
+
 
     fun getSessionData(sessionKey: String, meetingKey: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            _sessionInfo.value = apiClient.getSessions(sessionKey = sessionKey, meetingKey = meetingKey)
+            _sessionInfo.value =
+                apiClient.getSessions(sessionKey = sessionKey, meetingKey = meetingKey)
 
         }
     }
@@ -41,11 +55,26 @@ class DataScreenViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val driversFlow =
-                    async { apiClient.getDrivers(sessionKey = sessionKey, meetingKey = meetingKey) }.await()
+                    async {
+                        apiClient.getDrivers(
+                            sessionKey = sessionKey,
+                            meetingKey = meetingKey
+                        )
+                    }.await()
                 val intervalsFlow =
-                    async { apiClient.getIntervals(sessionKey = sessionKey, meetingKey = meetingKey) }.await()
+                    async {
+                        apiClient.getIntervals(
+                            sessionKey = sessionKey,
+                            meetingKey = meetingKey
+                        )
+                    }.await()
                 val positionsFlow =
-                    async { apiClient.getPosition(sessionKey = sessionKey, meetingKey = meetingKey) }.await()
+                    async {
+                        apiClient.getPosition(
+                            sessionKey = sessionKey,
+                            meetingKey = meetingKey
+                        )
+                    }.await()
 
                 combine(
                     driversFlow,
@@ -147,6 +176,7 @@ sealed class DataScreenUIState {
     data class Success(
         val driverInfoList: List<DriverInfo>
     ) : DataScreenUIState()
+
 }
 
 data class DriverInfo(

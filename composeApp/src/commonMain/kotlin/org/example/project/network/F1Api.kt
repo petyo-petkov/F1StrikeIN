@@ -89,5 +89,7 @@ interface F1Api {
         meetingKey: String? = null,
     ): Flow<List<Weather>>
 
+   suspend fun refresh()
+
 
 }

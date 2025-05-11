@@ -1,19 +1,35 @@
 package org.example.project.network
 
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.cache.HttpCache
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.URLBuilder
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.json.Json
-import org.example.project.network.models.*
+import org.example.project.network.models.CarData
+import org.example.project.network.models.Drivers
+import org.example.project.network.models.Intervals
+import org.example.project.network.models.Laps
+import org.example.project.network.models.Location
+import org.example.project.network.models.Meetings
+import org.example.project.network.models.Pit
+import org.example.project.network.models.Position
+import org.example.project.network.models.RaceControl
+import org.example.project.network.models.Sessions
+import org.example.project.network.models.Stints
+import org.example.project.network.models.TeamRadio
+import org.example.project.network.models.Weather
 import kotlin.coroutines.coroutineContext
 
 class F1ApiClient : F1Api {
@@ -29,15 +45,30 @@ class F1ApiClient : F1Api {
                     explicitNulls = false
                 })
         }
+        install(HttpCache)
+
         install(HttpTimeout) {
             requestTimeoutMillis = 10000
         }
 
     }
 
+    private val carDataCache = Cache<CarData>()
+    private val driversCache = Cache<Drivers>()
+    private val intervalsCache = Cache<Intervals>()
+    private val lapsCache = Cache<Laps>()
+    private val locationsCache = Cache<Location>()
+    private val pitCache = Cache<Pit>()
+    private val positionCache = Cache<Position>()
+    private val raceControlCache = Cache<RaceControl>()
+    private val stintsCache = Cache<Stints>()
+    private val teamRadiosCache = Cache<TeamRadio>()
+    private val weatherCache = Cache<Weather>()
+
     companion object {
         private const val BASE_URL = "https://api.openf1.org/v1"
         private const val DELAY_TIME = 500L
+        private const val CACHE_DURATION = 1000L
     }
 
     override fun getCarData(
@@ -47,15 +78,28 @@ class F1ApiClient : F1Api {
         sessionKey: String?,
     ): Flow<List<CarData>> = flow {
         while (coroutineContext.isActive) {
-            val request: List<CarData> = makeRequest("car_data") {
-                date?.let { parameters.append("date", it) }
-                driverNumber?.let { parameters.append("driver_number", it.toString()) }
-                meetingKey?.let { parameters.append("meeting_key", it) }
-                sessionKey?.let { parameters.append("session_key", it) }
+
+            val cachedData = carDataCache.get(CACHE_DURATION)
+            if (cachedData != null) {
+                emit(cachedData)
             }
-            emit(request)
+            try {
+                val request: List<CarData> = makeRequest("car_data") {
+                    date?.let { parameters.append("date", it) }
+                    driverNumber?.let { parameters.append("driver_number", it.toString()) }
+                    meetingKey?.let { parameters.append("meeting_key", it) }
+                    sessionKey?.let { parameters.append("session_key", it) }
+                }
+                carDataCache.put(request)
+                emit(request)
+            } catch (e: Exception) {
+                println("Error fetching car data: ${e.message}")
+            }
+
             delay(DELAY_TIME)
+
         }
+
     }
 
     override fun getDrivers(
@@ -64,16 +108,24 @@ class F1ApiClient : F1Api {
         sessionKey: String?,
     ): Flow<List<Drivers>> = flow {
         while (coroutineContext.isActive) {
-            val request: List<Drivers> = makeRequest("drivers") {
-                driverNumber?.let { parameters.append("driver_number", it.toString()) }
-                meetingKey?.let { parameters.append("meeting_key", it) }
-                sessionKey?.let { parameters.append("session_key", it) }
+
+            val cachedData = driversCache.get(CACHE_DURATION)
+            if (cachedData != null) {
+                emit(cachedData)
             }
-            emit(request)
+            try {
+                val request: List<Drivers> = makeRequest("drivers") {
+                    driverNumber?.let { parameters.append("driver_number", it.toString()) }
+                    meetingKey?.let { parameters.append("meeting_key", it) }
+                    sessionKey?.let { parameters.append("session_key", it) }
+                }
+                driversCache.put(request)
+                emit(request)
+            } catch (e: Exception) {
+                println("Error fetching car data: ${e.message}")
+            }
+
             delay(DELAY_TIME)
-            if (!coroutineContext.isActive) {
-                println("Terminando el flujo de datos")
-            }
         }
     }
 
@@ -83,16 +135,24 @@ class F1ApiClient : F1Api {
         driverNumber: Int?,
     ): Flow<List<Intervals>> = flow {
         while (coroutineContext.isActive) {
-            val request: List<Intervals> = makeRequest("intervals") {
-                sessionKey?.let { parameters.append("session_key", it) }
-                meetingKey?.let { parameters.append("meeting_key", it) }
-                driverNumber?.let { parameters.append("driver_number", it.toString()) }
+
+            val cachedData = intervalsCache.get(CACHE_DURATION)
+            if (cachedData != null) {
+                emit(cachedData)
             }
-            emit(request)
+            try {
+                val request: List<Intervals> = makeRequest("intervals") {
+                    sessionKey?.let { parameters.append("session_key", it) }
+                    meetingKey?.let { parameters.append("meeting_key", it) }
+                    driverNumber?.let { parameters.append("driver_number", it.toString()) }
+                }
+                intervalsCache.put(request)
+                emit(request)
+            } catch (e: Exception) {
+                println("Error fetching car data: ${e.message}")
+            }
             delay(DELAY_TIME)
-            if (!coroutineContext.isActive) {
-                println("Terminando el flujo de datos")
-            }
+
         }
     }
 
@@ -101,17 +161,25 @@ class F1ApiClient : F1Api {
         sessionKey: String?, meetingKey: String?, driverNumber: Int?, lapNumber: Int?
     ): Flow<List<Laps>> = flow {
         while (coroutineContext.isActive) {
-            val request: List<Laps> = makeRequest("laps") {
-                sessionKey?.let { parameters.append("session_key", it) }
-                meetingKey?.let { parameters.append("meeting_key", it) }
-                driverNumber?.let { parameters.append("driver_number", it.toString()) }
-                lapNumber?.let { parameters.append("lap_number", it.toString()) }
+
+            val cachedData = lapsCache.get(CACHE_DURATION)
+            if (cachedData != null) {
+                emit(cachedData)
             }
-            emit(request)
+            try {
+                val request: List<Laps> = makeRequest("laps") {
+                    sessionKey?.let { parameters.append("session_key", it) }
+                    meetingKey?.let { parameters.append("meeting_key", it) }
+                    driverNumber?.let { parameters.append("driver_number", it.toString()) }
+                    lapNumber?.let { parameters.append("lap_number", it.toString()) }
+                }
+                lapsCache.put(request)
+                emit(request)
+            } catch (e: Exception) {
+                println("Error fetching car data: ${e.message}")
+            }
             delay(DELAY_TIME)
-            if (!coroutineContext.isActive) {
-                println("Terminando el flujo de datos")
-            }
+
         }
     }
 
@@ -119,17 +187,25 @@ class F1ApiClient : F1Api {
         date: String?, driverNumber: Int?, sessionKey: String?, meetingKey: String?
     ): Flow<List<Location>> = flow {
         while (coroutineContext.isActive) {
-            val request: List<Location> = makeRequest("location") {
-                date?.let { parameters.append("date", it) }
-                driverNumber?.let { parameters.append("driver_number", it.toString()) }
-                sessionKey?.let { parameters.append("session_key", it) }
-                meetingKey?.let { parameters.append("meeting_key", it) }
+
+            val cachedData = locationsCache.get(CACHE_DURATION)
+            if (cachedData != null) {
+                emit(cachedData)
             }
-            emit(request)
+            try {
+                val request: List<Location> = makeRequest("location") {
+                    date?.let { parameters.append("date", it) }
+                    driverNumber?.let { parameters.append("driver_number", it.toString()) }
+                    sessionKey?.let { parameters.append("session_key", it) }
+                    meetingKey?.let { parameters.append("meeting_key", it) }
+                }
+                locationsCache.put(request)
+                emit(request)
+            } catch (e: Exception) {
+                println("Error fetching car data: ${e.message}")
+            }
             delay(DELAY_TIME)
-            if (!coroutineContext.isActive) {
-                println("Terminando el flujo de datos")
-            }
+
         }
     }
 
@@ -168,12 +244,22 @@ class F1ApiClient : F1Api {
         meetingKey: String?,
     ): Flow<List<Pit>> = flow {
         while (coroutineContext.isActive) {
-            val request: List<Pit> = makeRequest("pit") {
-                sessionKey?.let { parameters.append("session_key", it) }
-                meetingKey?.let { parameters.append("meeting_key", it) }
-                driverNumber?.let { parameters.append("driver_number", it.toString()) }
+
+            val cachedData = pitCache.get(CACHE_DURATION)
+            if (cachedData != null) {
+                emit(cachedData)
             }
-            emit(request)
+            try {
+                val request: List<Pit> = makeRequest("pit") {
+                    sessionKey?.let { parameters.append("session_key", it) }
+                    meetingKey?.let { parameters.append("meeting_key", it) }
+                    driverNumber?.let { parameters.append("driver_number", it.toString()) }
+                }
+                pitCache.put(request)
+                emit(request)
+            } catch (e: Exception) {
+                println("Error fetching car data: ${e.message}")
+            }
             delay(DELAY_TIME)
 
         }
@@ -184,13 +270,24 @@ class F1ApiClient : F1Api {
         driverNumber: Int?, sessionKey: String?, meetingKey: String?
     ): Flow<List<Position>> = flow {
         while (coroutineContext.isActive) {
-            val request: List<Position> = makeRequest("position") {
-                sessionKey?.let { parameters.append("session_key", it) }
-                meetingKey?.let { parameters.append("meeting_key", it) }
-                driverNumber?.let { parameters.append("driver_number", it.toString()) }
+
+            val cachedData = positionCache.get(CACHE_DURATION)
+            if (cachedData != null) {
+                emit(cachedData)
             }
-            emit(request)
+            try {
+                val request: List<Position> = makeRequest("position") {
+                    sessionKey?.let { parameters.append("session_key", it) }
+                    meetingKey?.let { parameters.append("meeting_key", it) }
+                    driverNumber?.let { parameters.append("driver_number", it.toString()) }
+                }
+                positionCache.put(request)
+                emit(request)
+            } catch (e: Exception) {
+                println("Error fetching car data: ${e.message}")
+            }
             delay(DELAY_TIME)
+
         }
     }
 
@@ -198,14 +295,25 @@ class F1ApiClient : F1Api {
         driverNumber: Int?, sessionKey: String?, meetingKey: String?
     ): Flow<List<RaceControl>> = flow {
         while (coroutineContext.isActive) {
-            val request: List<RaceControl> = makeRequest("race_control") {
-                sessionKey?.let { parameters.append("session_key", it) }
-                meetingKey?.let { parameters.append("meeting_key", it) }
-                driverNumber?.let { parameters.append("driver_number", it.toString()) }
 
+            val cachedData = raceControlCache.get(CACHE_DURATION)
+            if (cachedData != null) {
+                emit(cachedData)
             }
-            emit(request)
+            try {
+                val request: List<RaceControl> = makeRequest("race_control") {
+                    sessionKey?.let { parameters.append("session_key", it) }
+                    meetingKey?.let { parameters.append("meeting_key", it) }
+                    driverNumber?.let { parameters.append("driver_number", it.toString()) }
+
+                }
+                raceControlCache.put(request)
+                emit(request)
+            } catch (e: Exception) {
+                println("Error fetching car data: ${e.message}")
+            }
             delay(DELAY_TIME)
+
         }
     }
 
@@ -213,13 +321,24 @@ class F1ApiClient : F1Api {
         driverNumber: Int?, sessionKey: String?, meetingKey: String?
     ): Flow<List<Stints>> = flow {
         while (coroutineContext.isActive) {
-            val request: List<Stints> = makeRequest("stints") {
-                sessionKey?.let { parameters.append("session_key", it) }
-                meetingKey?.let { parameters.append("meeting_key", it) }
-                driverNumber?.let { parameters.append("driver_number", it.toString()) }
+
+            val cachedData = stintsCache.get(CACHE_DURATION)
+            if (cachedData != null) {
+                emit(cachedData)
             }
-            emit(request)
+            try {
+                val request: List<Stints> = makeRequest("stints") {
+                    sessionKey?.let { parameters.append("session_key", it) }
+                    meetingKey?.let { parameters.append("meeting_key", it) }
+                    driverNumber?.let { parameters.append("driver_number", it.toString()) }
+                }
+                stintsCache.put(request)
+                emit(request)
+            } catch (e: Exception) {
+                println("Error fetching car data: ${e.message}")
+            }
             delay(DELAY_TIME)
+
         }
     }
 
@@ -227,27 +346,54 @@ class F1ApiClient : F1Api {
         driverNumber: Int?, sessionKey: String?, meetingKey: String?
     ): Flow<List<TeamRadio>> = flow {
         while (coroutineContext.isActive) {
-            val request: List<TeamRadio> = makeRequest("team_radio") {
-                sessionKey?.let { parameters.append("session_key", it) }
-                meetingKey?.let { parameters.append("meeting_key", it) }
-                driverNumber?.let { parameters.append("driver_number", it.toString()) }
+            val cachedData = teamRadiosCache.get(CACHE_DURATION)
+            if (cachedData != null) {
+                emit(cachedData)
             }
-            emit(request)
+            try {
+                val request: List<TeamRadio> = makeRequest("team_radio") {
+                    sessionKey?.let { parameters.append("session_key", it) }
+                    meetingKey?.let { parameters.append("meeting_key", it) }
+                    driverNumber?.let { parameters.append("driver_number", it.toString()) }
+                }
+                teamRadiosCache.put(request)
+                emit(request)
+            } catch (e: Exception) {
+                println("Error fetching car data: ${e.message}")
+            }
             delay(DELAY_TIME)
+
         }
     }
 
     override fun getWeather(
-        sessionKey: String?, meetingKey: String?
+        sessionKey: String?,
+        meetingKey: String?
     ): Flow<List<Weather>> = flow {
         while (coroutineContext.isActive) {
-            val request: List<Weather> = makeRequest("weather") {
-                sessionKey?.let { parameters.append("session_key", it) }
-                meetingKey?.let { parameters.append("meeting_key", it) }
+
+            val cachedData = weatherCache.get(CACHE_DURATION)
+            if (cachedData != null) {
+                emit(cachedData)
             }
-            emit(request)
+            try {
+                val request: List<Weather> = makeRequest("weather") {
+                    sessionKey?.let { parameters.append("session_key", it) }
+                    meetingKey?.let { parameters.append("meeting_key", it) }
+                }
+                weatherCache.put(request)
+                emit(request)
+            } catch (e: Exception) {
+                println("Error fetching car data: ${e.message}")
+            }
+
             delay(DELAY_TIME)
+
         }
+    }
+
+    override suspend fun refresh() {
+        Cache<Any>().invalidate()
     }
 
 
