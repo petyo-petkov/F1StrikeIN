@@ -54,7 +54,7 @@ class F1ApiClient : F1Api {
     }
 
     private val carDataCache = Cache<CarData>()
-    private val driversCache = Cache<Drivers>()
+    //private val driversCache = Cache<Drivers>()
     private val intervalsCache = Cache<Intervals>()
     private val lapsCache = Cache<Laps>()
     private val locationsCache = Cache<Location>()
@@ -67,8 +67,8 @@ class F1ApiClient : F1Api {
 
     companion object {
         private const val BASE_URL = "https://api.openf1.org/v1"
-        private const val DELAY_TIME = 500L
-        private const val CACHE_DURATION = 1000L
+        private const val DELAY_TIME = 4000L
+        private const val CACHE_DURATION = 5000L
     }
 
     override fun getCarData(
@@ -102,16 +102,27 @@ class F1ApiClient : F1Api {
 
     }
 
-    override fun getDrivers(
+
+    override suspend fun getDrivers(
+        driverNumber: Int?,
+        meetingKey: String?,
+        sessionKey: String?
+    ): List<Drivers> = makeRequest("drivers") {
+        driverNumber?.let { parameters.append("driver_number", it.toString()) }
+        meetingKey?.let { parameters.append("meeting_key", it) }
+        sessionKey?.let { parameters.append("session_key", it) }
+    }
+/*
+    override fun getDriversFlow(
         driverNumber: Int?,
         meetingKey: String?,
         sessionKey: String?,
     ): Flow<List<Drivers>> = flow {
         while (coroutineContext.isActive) {
-
             val cachedData = driversCache.get(CACHE_DURATION)
             if (cachedData != null) {
                 emit(cachedData)
+                println("INFO: USING DRIVERS CACHE")
             }
             try {
                 val request: List<Drivers> = makeRequest("drivers") {
@@ -121,13 +132,15 @@ class F1ApiClient : F1Api {
                 }
                 driversCache.put(request)
                 emit(request)
+                println("INFO: USING DRIVERS API")
             } catch (e: Exception) {
                 println("Error fetching car data: ${e.message}")
             }
-
             delay(DELAY_TIME)
         }
     }
+
+ */
 
     override fun getIntervals(
         sessionKey: String?,
@@ -139,6 +152,8 @@ class F1ApiClient : F1Api {
             val cachedData = intervalsCache.get(CACHE_DURATION)
             if (cachedData != null) {
                 emit(cachedData)
+
+                println("INFO: USING INTERVALS CACHE")
             }
             try {
                 val request: List<Intervals> = makeRequest("intervals") {
@@ -148,6 +163,7 @@ class F1ApiClient : F1Api {
                 }
                 intervalsCache.put(request)
                 emit(request)
+                println("INFO: USING INTERVALS API")
             } catch (e: Exception) {
                 println("Error fetching car data: ${e.message}")
             }
@@ -265,7 +281,6 @@ class F1ApiClient : F1Api {
         }
     }
 
-
     override fun getPosition(
         driverNumber: Int?, sessionKey: String?, meetingKey: String?
     ): Flow<List<Position>> = flow {
@@ -274,6 +289,7 @@ class F1ApiClient : F1Api {
             val cachedData = positionCache.get(CACHE_DURATION)
             if (cachedData != null) {
                 emit(cachedData)
+                println("INFO: USING POSITION CACHE")
             }
             try {
                 val request: List<Position> = makeRequest("position") {
@@ -283,6 +299,7 @@ class F1ApiClient : F1Api {
                 }
                 positionCache.put(request)
                 emit(request)
+                println("INFO: USING POSITION API")
             } catch (e: Exception) {
                 println("Error fetching car data: ${e.message}")
             }

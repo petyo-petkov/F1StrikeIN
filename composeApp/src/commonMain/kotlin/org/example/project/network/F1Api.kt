@@ -13,11 +13,17 @@ interface F1Api {
 
         ): Flow<List<CarData>>
 
-    fun getDrivers(
+    suspend fun getDrivers(
         driverNumber: Int? = null,
         meetingKey: String? = null,
         sessionKey: String? = null,
-    ): Flow<List<Drivers>>
+    ): List<Drivers>
+
+//    fun getDriversFlow(
+//        driverNumber: Int? = null,
+//        meetingKey: String? = null,
+//        sessionKey: String? = null,
+//    ): Flow<List<Drivers>>
 
     fun getIntervals(
         sessionKey: String? = null,

@@ -13,7 +13,7 @@ class Cache<T>() {
         if (cachedData != null && now - timestamp < cacheDurationMs) {
             cachedData
         } else {
-            cachedData = null // limpia si está vencido
+            cachedData = null
             null
         }
     }

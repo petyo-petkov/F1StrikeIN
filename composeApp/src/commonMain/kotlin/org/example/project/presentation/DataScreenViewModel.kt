@@ -46,7 +46,6 @@ class DataScreenViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             _sessionInfo.value =
                 apiClient.getSessions(sessionKey = sessionKey, meetingKey = meetingKey)
-
         }
     }
 
@@ -54,13 +53,13 @@ class DataScreenViewModel(
     fun loadDriverData(sessionKey: String, meetingKey: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val driversFlow =
-                    async {
-                        apiClient.getDrivers(
-                            sessionKey = sessionKey,
-                            meetingKey = meetingKey
-                        )
-                    }.await()
+//                val driversFlow =
+//                    async {
+//                        apiClient.getDrivers(
+//                            sessionKey = sessionKey,
+//                            meetingKey = meetingKey
+//                        )
+//                    }.await()
                 val intervalsFlow =
                     async {
                         apiClient.getIntervals(
@@ -77,11 +76,12 @@ class DataScreenViewModel(
                     }.await()
 
                 combine(
-                    driversFlow,
+                    //driversFlow,
                     intervalsFlow,
                     positionsFlow
-                ) { drivers, intervals, positions ->
+                ) { intervals, positions ->
 
+                    val drivers = apiClient.getDrivers(sessionKey = sessionKey, meetingKey =  meetingKey)
                     val driverInfoList = processData(drivers, intervals, positions)
 
                     DataScreenUIState.Success(driverInfoList = driverInfoList)
@@ -157,7 +157,7 @@ private fun processData(
 // Función auxiliar para extraer valores de JsonElement
 private fun extractJsonValue(element: JsonElement?): String {
 
-    if (element == null) return ""
+    if (element == null) return "-"
 
     return try {
         when {
