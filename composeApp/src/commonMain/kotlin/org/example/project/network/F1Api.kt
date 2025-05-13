@@ -1,7 +1,19 @@
 package org.example.project.network
 
 import kotlinx.coroutines.flow.Flow
-import org.example.project.network.models.*
+import org.example.project.network.models.CarData
+import org.example.project.network.models.Drivers
+import org.example.project.network.models.Intervals
+import org.example.project.network.models.Laps
+import org.example.project.network.models.Location
+import org.example.project.network.models.Meetings
+import org.example.project.network.models.Pit
+import org.example.project.network.models.Position
+import org.example.project.network.models.RaceControl
+import org.example.project.network.models.Sessions
+import org.example.project.network.models.Stints
+import org.example.project.network.models.TeamRadio
+import org.example.project.network.models.Weather
 
 
 interface F1Api {
@@ -18,12 +30,6 @@ interface F1Api {
         meetingKey: String? = null,
         sessionKey: String? = null,
     ): List<Drivers>
-
-//    fun getDriversFlow(
-//        driverNumber: Int? = null,
-//        meetingKey: String? = null,
-//        sessionKey: String? = null,
-//    ): Flow<List<Drivers>>
 
     fun getIntervals(
         sessionKey: String? = null,
@@ -95,7 +101,7 @@ interface F1Api {
         meetingKey: String? = null,
     ): Flow<List<Weather>>
 
-   suspend fun refresh()
+    suspend fun refresh()
 
 
 }
