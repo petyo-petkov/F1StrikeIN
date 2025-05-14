@@ -16,20 +16,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.example.project.network.F1ApiClient
 import org.example.project.presentation.DataScreenUIState
 import org.example.project.presentation.DataScreenViewModel
 import org.example.project.presentation.EventData
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(
-    apiClient: F1ApiClient = F1ApiClient(),
     sessionKey: String = "latest",
     meetingKey: String = "latest"
 ) {
 
-    val vm = DataScreenViewModel(apiClient)
+    val vm = koinViewModel<DataScreenViewModel>()
 
     val evento by vm.sessionInfo.collectAsStateWithLifecycle()
     val uiState by vm.uiState.collectAsStateWithLifecycle()

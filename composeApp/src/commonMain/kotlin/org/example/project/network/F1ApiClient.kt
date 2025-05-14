@@ -2,21 +2,15 @@ package org.example.project.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.cache.HttpCache
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLBuilder
-import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
-import kotlinx.serialization.json.Json
 import org.example.project.network.models.CarData
 import org.example.project.network.models.Drivers
 import org.example.project.network.models.Intervals
@@ -32,26 +26,9 @@ import org.example.project.network.models.TeamRadio
 import org.example.project.network.models.Weather
 import kotlin.coroutines.coroutineContext
 
-class F1ApiClient : F1Api {
-
-    private val client = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                    prettyPrint = true
-                    coerceInputValues = true
-                    explicitNulls = false
-                })
-        }
-        install(HttpCache)
-
-        install(HttpTimeout) {
-            requestTimeoutMillis = 10000
-        }
-
-    }
+class F1ApiClient(
+    private val client: HttpClient
+) : F1Api {
 
     private val carDataCache = Cache<CarData>()
     private val intervalsCache = Cache<Intervals>()
@@ -68,6 +45,35 @@ class F1ApiClient : F1Api {
         private const val BASE_URL = "https://api.openf1.org/v1"
         private const val DELAY_TIME = 4000L
         private const val CACHE_DURATION = 5000L
+    }
+
+    private suspend inline fun <reified T> makeRequest(
+        endpoint: String, crossinline block: URLBuilder.() -> Unit
+    ): List<T> {
+        try {
+            val response = client.get("$BASE_URL/$endpoint") {
+                url { block() }
+                headers {
+                    append(HttpHeaders.Accept, "application/json")
+                    append(HttpHeaders.AcceptCharset, "UTF-8")
+                    append(HttpHeaders.CacheControl, "no-cache")
+                    append(HttpHeaders.Connection, "keep-alive")
+                    append(HttpHeaders.UserAgent, "F1ApiClient/1.0")
+                    append(HttpHeaders.AcceptLanguage, "en-US,en;q=0.9")
+                    append(HttpHeaders.Pragma, "no-cache")
+                }
+            }
+            if (response.status == HttpStatusCode.OK) {
+                return response.body<List<T>>()
+            } else {
+                println("Error $response")
+                return emptyList()
+            }
+
+        } catch (e: Exception) {
+            println("Error al obtener los datos: ${e.message}")
+            return emptyList()
+        }
     }
 
     override fun getCarData(
@@ -101,7 +107,6 @@ class F1ApiClient : F1Api {
 
     }
 
-
     override suspend fun getDrivers(
         driverNumber: Int?,
         meetingKey: String?,
@@ -111,7 +116,6 @@ class F1ApiClient : F1Api {
         meetingKey?.let { parameters.append("meeting_key", it) }
         sessionKey?.let { parameters.append("session_key", it) }
     }
-
 
     override fun getIntervals(
         sessionKey: String?,
@@ -139,7 +143,6 @@ class F1ApiClient : F1Api {
 
         }
     }
-
 
     override fun getLaps(
         sessionKey: String?, meetingKey: String?, driverNumber: Int?, lapNumber: Int?
@@ -210,7 +213,6 @@ class F1ApiClient : F1Api {
 
     }
 
-
     override suspend fun getMeetings(
         year: Int?,
         countryName: String?,
@@ -220,7 +222,6 @@ class F1ApiClient : F1Api {
         countryName?.let { parameters.append("country_name", it) }
         location?.let { parameters.append("location", it) }
     }
-
 
     override fun getPit(
         driverNumber: Int?,
@@ -379,37 +380,6 @@ class F1ApiClient : F1Api {
         Cache<Any>().invalidate()
     }
 
-
-    private suspend inline fun <reified T> makeRequest(
-        endpoint: String, crossinline block: URLBuilder.() -> Unit
-    ): List<T> {
-        try {
-            val response = client.get("$BASE_URL/$endpoint") {
-                url { block() }
-                headers {
-                    append(HttpHeaders.Accept, "application/json")
-                    append(HttpHeaders.AcceptCharset, "UTF-8")
-                    append(HttpHeaders.CacheControl, "no-cache")
-                    append(HttpHeaders.Connection, "keep-alive")
-                    append(HttpHeaders.UserAgent, "F1ApiClient/1.0")
-                    append(HttpHeaders.AcceptLanguage, "en-US,en;q=0.9")
-                    append(HttpHeaders.Pragma, "no-cache")
-                }
-            }
-            if (response.status == HttpStatusCode.OK) {
-                return response.body<List<T>>()
-            } else {
-                println("Error $response")
-                return emptyList()
-            }
-
-        } catch (e: Exception) {
-            println("Error al obtener los datos: ${e.message}")
-            return emptyList()
-        }
-
-        client.close()
-    }
 
 }
 
