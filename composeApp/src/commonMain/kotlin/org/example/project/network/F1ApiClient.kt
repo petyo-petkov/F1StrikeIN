@@ -378,6 +378,7 @@ class F1ApiClient(
 
     override suspend fun refresh() {
         Cache<Any>().invalidate()
+
     }
 
 

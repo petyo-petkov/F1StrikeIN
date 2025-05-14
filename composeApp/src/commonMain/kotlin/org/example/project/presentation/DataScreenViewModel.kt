@@ -1,9 +1,12 @@
 package org.example.project.presentation
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -29,14 +32,21 @@ class DataScreenViewModel(
     private val _sessionInfo = MutableStateFlow<List<Sessions>>(emptyList())
     val sessionInfo: StateFlow<List<Sessions>> = _sessionInfo
 
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+    var isRefreshing by mutableStateOf(false)
+        private set
 
     fun refreshData() {
-        _isRefreshing.update { true }
-        viewModelScope.launch {
-            apiClient.refresh()
-            _isRefreshing.update { false }
+        isRefreshing = true
+        viewModelScope.launch() {
+            try {
+                apiClient.refresh()
+            } catch (e: Exception) {
+                "Error al actualizar los datos: ${e.message}"
+            } finally {
+                delay(2000)
+                isRefreshing = false
+            }
+
         }
 
     }
@@ -53,45 +63,34 @@ class DataScreenViewModel(
     fun loadDriverData(sessionKey: String, meetingKey: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-//                val driversFlow =
-//                    async {
-//                        apiClient.getDrivers(
-//                            sessionKey = sessionKey,
-//                            meetingKey = meetingKey
-//                        )
-//                    }.await()
-                val intervalsFlow =
-                    async {
-                        apiClient.getIntervals(
-                            sessionKey = sessionKey,
-                            meetingKey = meetingKey
-                        )
-                    }.await()
-                val positionsFlow =
-                    async {
-                        apiClient.getPosition(
-                            sessionKey = sessionKey,
-                            meetingKey = meetingKey
-                        )
-                    }.await()
+                val intervalsFlow = apiClient.getIntervals(
+                    sessionKey = sessionKey,
+                    meetingKey = meetingKey
+                )
+
+                val positionsFlow = apiClient.getPosition(
+                    sessionKey = sessionKey,
+                    meetingKey = meetingKey
+                )
+
+                val drivers = apiClient.getDrivers(sessionKey = sessionKey, meetingKey = meetingKey)
 
                 combine(
-                    //driversFlow,
                     intervalsFlow,
                     positionsFlow
                 ) { intervals, positions ->
-
-                    val drivers = apiClient.getDrivers(sessionKey = sessionKey, meetingKey =  meetingKey)
                     val driverInfoList = processData(drivers, intervals, positions)
 
                     DataScreenUIState.Success(driverInfoList = driverInfoList)
 
                 }.collect { uiState ->
-                    _uiState.value = uiState
+                    _uiState.update { uiState }
                 }
 
             } catch (e: Exception) {
-                _uiState.value = DataScreenUIState.Error(e.message ?: "Error al cargar los datos")
+                _uiState.update {
+                    DataScreenUIState.Error(e.message ?: "Error al cargar los datos")
+                }
             }
         }
     }

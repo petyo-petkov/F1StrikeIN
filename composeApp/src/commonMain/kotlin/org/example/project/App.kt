@@ -32,7 +32,7 @@ fun App(
 
     val evento by vm.sessionInfo.collectAsStateWithLifecycle()
     val uiState by vm.uiState.collectAsStateWithLifecycle()
-    val isRefreshing by vm.isRefreshing.collectAsStateWithLifecycle()
+    val isRefreshing = vm.isRefreshing
 
     LaunchedEffect(key1 = Unit) {
         vm.getSessionData(sessionKey, meetingKey)
@@ -40,7 +40,7 @@ fun App(
     }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize().padding(6.dp),
+        modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets.safeDrawing,
 
         ) { paddingValues ->
@@ -58,7 +58,7 @@ fun App(
                     drivers = (uiState as DataScreenUIState.Success).driverInfoList,
                     evento = evento.firstOrNull(),
                     onRefresh = vm::refreshData,
-                    isRefreshing = isRefreshing
+                    isRefreshing =  isRefreshing
                 )
 
 
