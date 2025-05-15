@@ -26,10 +26,18 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.constraintlayout)
+            implementation(libs.androidx.appcompat)
+            implementation(libs.androidx.core.ktx)
+
+            implementation(libs.androidx.material3)
+            implementation(libs.androidx.material3.window.size.class1)
+            implementation(libs.androidx.material3.adaptive.navigation.suite)
 
             // Koin
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
+
 
         }
         commonMain.dependencies {
@@ -41,13 +49,11 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
 
-            implementation(libs.androidx.material3)
-            implementation(libs.androidx.material3.window.size.class1)
-            implementation(libs.androidx.material3.adaptive.navigation.suite)
+            // Materl3 Desktop + Common
+            implementation(libs.androidx.material3.common)
 
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
-
 
             //Ktor
             implementation(libs.ktor.client.core)
@@ -61,14 +67,25 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.viewmodel.navigation)
-            implementation("io.insert-koin:koin-ktor:4.0.4")
-            implementation("io.insert-koin:koin-logger-slf4j:4.0.4")
+            implementation(libs.koin.ktor)
+            implementation(libs.koin.logger.slf4j)
+
+            commonTest.dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.kotlin.test.junit)
+                implementation(libs.junit)
+                implementation(libs.androidx.test.junit)
+                implementation(libs.androidx.espresso.core)
+            }
+
 
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
 
+            //Material3 Desktop + Common
+            implementation(libs.androidx.material3.common)
 
 
 
@@ -78,12 +95,12 @@ kotlin {
 
 android {
     namespace = "org.example.project"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "org.example.project"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        minSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }

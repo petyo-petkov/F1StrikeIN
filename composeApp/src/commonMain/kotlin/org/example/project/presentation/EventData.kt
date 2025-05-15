@@ -19,9 +19,7 @@ import org.example.project.network.models.Sessions
 fun EventData(
     modifier: Modifier = Modifier,
     evento: Sessions?,
-    drivers: List<DriverInfo>?,
-    onRefresh: () -> Unit,
-    isRefreshing: Boolean,
+    drivers: List<DriverInfo>?
 ) {
 
     Card(
@@ -36,8 +34,10 @@ fun EventData(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Header(evento)
+
             HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.primary)
-            Data(drivers, onRefresh, isRefreshing)
+
+            Data(drivers)
 
         }
 

@@ -1,12 +1,8 @@
 package org.example.project.presentation
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -31,25 +27,6 @@ class DataScreenViewModel(
 
     private val _sessionInfo = MutableStateFlow<List<Sessions>>(emptyList())
     val sessionInfo: StateFlow<List<Sessions>> = _sessionInfo
-
-    var isRefreshing by mutableStateOf(false)
-        private set
-
-    fun refreshData() {
-        isRefreshing = true
-        viewModelScope.launch() {
-            try {
-                apiClient.refresh()
-            } catch (e: Exception) {
-                "Error al actualizar los datos: ${e.message}"
-            } finally {
-                delay(2000)
-                isRefreshing = false
-            }
-
-        }
-
-    }
 
 
     fun getSessionData(sessionKey: String, meetingKey: String) {

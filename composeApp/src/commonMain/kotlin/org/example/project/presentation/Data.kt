@@ -14,8 +14,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,74 +26,63 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Data(
-    drivers: List<DriverInfo>?,
-    onRefresh: () -> Unit,
-    isRefreshing: Boolean
+    drivers: List<DriverInfo>?
 ) {
     if (drivers == null) return
 
-    val refreshstate = rememberPullToRefreshState()
-
-    PullToRefreshBox(
-        isRefreshing = isRefreshing,
-        onRefresh = onRefresh,
-        modifier = Modifier,
-        state = refreshstate,
-
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
 
-            if (drivers.isEmpty()) {
-                item {
-                    Text(
-                        "No se encontraron datos de pilotos",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(8.dp)
+        if (drivers.isEmpty()) {
+            item {
+                Text(
+                    "No se encontraron datos de pilotos",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
+        } else {
+            items(drivers, key = { it.driverNumber }) { driverInfo ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    box(
+                        "${driverInfo.position}",
+                        fontWeight = FontWeight.SemiBold,
+                        shape = RoundedCornerShape(16.dp),
+                        colorHex = driverInfo.teamColor
+                    )
+
+                    box(
+                        driverInfo.driverName,
+                        fontWeight = FontWeight.Bold,
+                        shape = null,
+                        colorHex = null
+                    )
+                    box(
+                        driverInfo.interval,
+                        fontWeight = FontWeight.Bold,
+                        shape = null,
+                        colorHex = null
+                    )
+                    box(
+                        driverInfo.gap,
+                        fontWeight = FontWeight.Bold,
+                        shape = null,
+                        colorHex = null
                     )
                 }
-
-            } else {
-                items(drivers, key = { it.driverNumber }) { driverInfo ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        box(
-                            "${driverInfo.position}",
-                            fontWeight = FontWeight.SemiBold,
-                            shape = RoundedCornerShape(16.dp),
-                            colorHex = driverInfo.teamColor
-                        )
-
-                        box(
-                            driverInfo.driverName,
-                            fontWeight = FontWeight.Bold,
-                            shape = null,
-                            colorHex = null
-                        )
-                        box(
-                            driverInfo.interval,
-                            fontWeight = FontWeight.Bold,
-                            shape = null,
-                            colorHex = null
-                        )
-                        box(
-                            driverInfo.gap,
-                            fontWeight = FontWeight.Bold,
-                            shape = null,
-                            colorHex = null
-                        )
-                    }
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
-                }
+                HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
             }
         }
     }
+
 }
 
 private fun String.toColor(): Color {

@@ -5,6 +5,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import org.example.project.di.initiKoin
+import org.example.project.presentation.App
 import org.koin.core.context.stopKoin
 
 fun main() {
