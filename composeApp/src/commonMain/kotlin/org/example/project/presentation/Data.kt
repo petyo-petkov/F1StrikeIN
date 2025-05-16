@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -47,82 +47,76 @@ fun Data(
 
         } else {
             items(drivers, key = { it.driverNumber }) { driverInfo ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    box(
-                        "${driverInfo.position}",
-                        fontWeight = FontWeight.SemiBold,
-                        shape = RoundedCornerShape(16.dp),
-                        colorHex = driverInfo.teamColor
-                    )
-
-                    box(
-                        driverInfo.driverName,
-                        fontWeight = FontWeight.Bold,
-                        shape = null,
-                        colorHex = null
-                    )
-                    box(
-                        driverInfo.interval,
-                        fontWeight = FontWeight.Bold,
-                        shape = null,
-                        colorHex = null
-                    )
-                    box(
-                        driverInfo.gap,
-                        fontWeight = FontWeight.Bold,
-                        shape = null,
-                        colorHex = null
-                    )
-                }
-                HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
+                DriverListItem(driverInfo)
+                HorizontalDivider()
             }
         }
     }
 
 }
 
-private fun String.toColor(): Color {
-    val colorInt = this.toLong(16)
-    return Color(
-        red = ((colorInt shr 16) and 0xFF) / 255f,
-        green = ((colorInt shr 8) and 0xFF) / 255f,
-        blue = (colorInt and 0xFF) / 255f
-    )
+@Composable
+fun DriverListItem(driverInfo: DriverInfo) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background((driverInfo.teamColor).toColor()),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "${driverInfo.position}",
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Black
+            )
+        }
+
+        Text(
+            text = driverInfo.driverName,
+            modifier = Modifier
+                .width(80.dp),
+            fontWeight = FontWeight.SemiBold
+
+        )
+
+        Text(
+            text = driverInfo.interval,
+            modifier = Modifier
+                .width(80.dp),
+            fontWeight = FontWeight.SemiBold
+        )
+
+
+        Text(
+            text = driverInfo.gap,
+            modifier = Modifier
+                .width(80.dp),
+            fontWeight = FontWeight.SemiBold
+
+        )
+    }
 }
 
 
-@Composable
-private fun box(text: String, fontWeight: FontWeight, shape: Shape?, colorHex: String?) {
-    if (shape != null && colorHex.isNullOrEmpty().not()) {
-
-        Box(
-            modifier = Modifier
-                .size(26.dp, 26.dp)
-                .clip(shape)
-                .background(colorHex.toColor()),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = text,
-                modifier = Modifier.align(Alignment.Center),
-                fontWeight = fontWeight,
-            )
-        }
-    } else {
-        Box(
-            modifier = Modifier
-                .size(80.dp, 30.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = text,
-                modifier = Modifier.align(Alignment.Center),
-                fontWeight = fontWeight,
-            )
-        }
+private fun String.toColor(): Color {
+    if (this.isEmpty()) return Color.LightGray
+    try {
+        val colorInt = this.toLong(16)
+        return Color(
+            red = ((colorInt shr 16) and 0xFF) / 255f,
+            green = ((colorInt shr 8) and 0xFF) / 255f,
+            blue = (colorInt and 0xFF) / 255f
+        )
+    } catch (e: NumberFormatException) {
+        println("Error al convertir el color: ${e.message}")
+        return Color.LightGray
     }
+
 }

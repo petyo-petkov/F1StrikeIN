@@ -1,18 +1,25 @@
 package org.example.project.presentation
 
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -38,21 +45,42 @@ fun App(
 
         ) { paddingValues ->
 
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-
-        ) {
+            contentAlignment = Alignment.Center
+        ){
             when (uiState) {
                 is DataScreenUIState.Loading -> PlatforProgressIndicator()
                 is DataScreenUIState.Error -> "Error Grave"
-                is DataScreenUIState.Success -> EventData(
-                    drivers = (uiState as DataScreenUIState.Success).driverInfoList,
-                    evento = evento.firstOrNull()
-                )
+                is DataScreenUIState.Success -> {
+
+                    val driverInfoList = (uiState as DataScreenUIState.Success).driverInfoList
+                    val evento = evento.firstOrNull()
+
+                    Card(
+                        modifier = Modifier.fillMaxSize(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(2.dp, color = MaterialTheme.colorScheme.primary),
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Header(evento)
+
+                            HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.primary)
+
+                            Data(driverInfoList)
+
+                        }
+
+                    }
+
+                }
 
             }
         }
