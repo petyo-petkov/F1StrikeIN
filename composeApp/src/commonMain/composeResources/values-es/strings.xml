@@ -1,0 +1,8 @@
+<resources>
+    <string name="header_grand_prix">Gran Premio de:</string>
+    <string name="header_date">Fecha:</string>
+    <string name="header_event">Evento:</string>
+    <string name="header_no_data">No hay datos del evento</string>
+    <string name="error_driver_data">No hay datos de los pilotos</string>
+    <string name="error_grave">Error Grave</string>
+</resources>

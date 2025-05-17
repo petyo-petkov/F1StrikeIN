@@ -22,10 +22,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import f1strikein.composeapp.generated.resources.Res
+import f1strikein.composeapp.generated.resources.error_driver_data
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Data(
+fun DriversTimeData(
     drivers: List<DriverInfo>?
 ) {
     if (drivers == null) return
@@ -39,7 +42,7 @@ fun Data(
         if (drivers.isEmpty()) {
             item {
                 Text(
-                    "No se encontraron datos de pilotos",
+                    stringResource(Res.string.error_driver_data),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(8.dp)
                 )

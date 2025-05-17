@@ -21,6 +21,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import f1strikein.composeapp.generated.resources.Res
+import f1strikein.composeapp.generated.resources.error_grave
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -50,10 +53,10 @@ fun App(
                 .fillMaxSize()
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
-        ){
+        ) {
             when (uiState) {
                 is DataScreenUIState.Loading -> PlatforProgressIndicator()
-                is DataScreenUIState.Error -> "Error Grave"
+                is DataScreenUIState.Error -> stringResource(Res.string.error_grave)
                 is DataScreenUIState.Success -> {
 
                     val driverInfoList = (uiState as DataScreenUIState.Success).driverInfoList
@@ -72,9 +75,12 @@ fun App(
                         ) {
                             Header(evento)
 
-                            HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.primary)
+                            HorizontalDivider(
+                                thickness = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
 
-                            Data(driverInfoList)
+                            DriversTimeData(driverInfoList)
 
                         }
 
