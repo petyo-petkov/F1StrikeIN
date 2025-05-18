@@ -1,6 +1,7 @@
 package org.example.project.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -31,31 +32,18 @@ import org.jetbrains.compose.resources.stringResource
 fun DriversTimeData(
     drivers: List<DriverInfo>?
 ) {
-    if (drivers == null) return
-
-    LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        if (drivers.isEmpty()) {
-            item {
-                Text(
-                    stringResource(Res.string.error_driver_data),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-
-        } else {
+    drivers?.let { drivers ->
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             items(drivers, key = { it.driverNumber }) { driverInfo ->
                 DriverListItem(driverInfo)
                 HorizontalDivider()
             }
         }
-    }
-
+    } ?: stringResource(Res.string.error_driver_data)
 }
 
 @Composable
@@ -69,30 +57,49 @@ fun DriverListItem(driverInfo: DriverInfo) {
     ) {
         Box(
             modifier = Modifier
-                .size(28.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background((driverInfo.teamColor).toColor()),
+                .size(24.dp)
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .background(Color.Transparent),
             contentAlignment = Alignment.Center
+
         ) {
+
             Text(
                 text = "${driverInfo.position}",
+                modifier = Modifier,
+                fontWeight = FontWeight.SemiBold,
+            )
+
+        }
+
+        Box(
+            modifier = Modifier
+                .width(60.dp)
+                .padding(start = 16.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(driverInfo.teamColor.toColor()),
+            contentAlignment = Alignment.Center
+
+        ) {
+            Text(
+                text = driverInfo.driverName,
+                modifier = Modifier,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.Black
+
             )
         }
 
-        Text(
-            text = driverInfo.driverName,
-            modifier = Modifier
-                .width(80.dp),
-            fontWeight = FontWeight.SemiBold
-
-        )
 
         Text(
             text = driverInfo.interval,
             modifier = Modifier
-                .width(80.dp),
+                .padding(start = 32.dp)
+                .weight(1f),
             fontWeight = FontWeight.SemiBold
         )
 
@@ -100,7 +107,8 @@ fun DriverListItem(driverInfo: DriverInfo) {
         Text(
             text = driverInfo.gap,
             modifier = Modifier
-                .width(80.dp),
+                .padding(start = 32.dp)
+                .weight(1f),
             fontWeight = FontWeight.SemiBold
 
         )
@@ -109,7 +117,6 @@ fun DriverListItem(driverInfo: DriverInfo) {
 
 
 private fun String.toColor(): Color {
-    if (this.isEmpty()) return Color.LightGray
     try {
         val colorInt = this.toLong(16)
         return Color(
@@ -119,7 +126,8 @@ private fun String.toColor(): Color {
         )
     } catch (e: NumberFormatException) {
         println("Error al convertir el color: ${e.message}")
-        return Color.LightGray
+        return Color.Transparent
+
     }
 
 }

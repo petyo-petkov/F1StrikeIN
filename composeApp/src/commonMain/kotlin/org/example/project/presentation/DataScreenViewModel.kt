@@ -33,6 +33,7 @@ class DataScreenViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             _sessionInfo.value =
                 apiClient.getSessions(sessionKey = sessionKey, meetingKey = meetingKey)
+
         }
     }
 

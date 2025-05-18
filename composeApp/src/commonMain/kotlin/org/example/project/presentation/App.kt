@@ -28,9 +28,10 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun App(
-    sessionKey: String = "latest",
-    meetingKey: String = "latest"
+    sessionKey: String = "latest" , //"10006"
+    meetingKey: String = "latest"    //"1256"
 ) {
+
 
     val vm = koinViewModel<DataScreenViewModel>()
 
@@ -71,9 +72,14 @@ fun App(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Header(evento)
+                            if (evento == null) {
+                                PlatforProgressIndicator()
+                            } else{
+                                Header(evento)
+                            }
 
                             HorizontalDivider(
                                 thickness = 2.dp,

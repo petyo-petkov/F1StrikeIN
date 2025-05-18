@@ -40,11 +40,14 @@ class F1ApiClient(
     private val stintsCache = Cache<Stints>()
     private val teamRadiosCache = Cache<TeamRadio>()
     private val weatherCache = Cache<Weather>()
+    private val driverCache = Cache<Drivers>()
+    private val sessionsCache = Cache<Sessions>()
+    private val meetingsCache = Cache<Meetings>()
 
     companion object {
         private const val BASE_URL = "https://api.openf1.org/v1"
-        private const val DELAY_TIME = 4000L
-        private const val CACHE_DURATION = 5000L
+        private const val DELAY_TIME = 4500L
+        private const val CACHE_DURATION = 3500L
     }
 
     private suspend inline fun <reified T> makeRequest(
@@ -111,10 +114,18 @@ class F1ApiClient(
         driverNumber: Int?,
         meetingKey: String?,
         sessionKey: String?
-    ): List<Drivers> = makeRequest("drivers") {
-        driverNumber?.let { parameters.append("driver_number", it.toString()) }
-        meetingKey?.let { parameters.append("meeting_key", it) }
-        sessionKey?.let { parameters.append("session_key", it) }
+    ): List<Drivers> {
+        val cachedData = driverCache.get(CACHE_DURATION)
+        if (cachedData != null) {
+            return cachedData
+        }
+        val drivers: List<Drivers> = makeRequest("drivers") {
+            driverNumber?.let { parameters.append("driver_number", it.toString()) }
+            meetingKey?.let { parameters.append("meeting_key", it) }
+            sessionKey?.let { parameters.append("session_key", it) }
+        }
+        driverCache.put(drivers)
+        return drivers
     }
 
     override fun getIntervals(
@@ -203,24 +214,39 @@ class F1ApiClient(
         countryName: String?,
         circuitShortName: String?,
         year: Int?
-    ): List<Sessions> = makeRequest("sessions") {
-        sessionKey?.let { parameters.append("session_key", it) }
-        meetingKey?.let { parameters.append("meeting_key", it) }
-        sessionName?.let { parameters.append("session_name", it) }
-        countryName?.let { parameters.append("country_name", it) }
-        circuitShortName?.let { parameters.append("circuit_short_name", it) }
-        year?.let { parameters.append("year", it.toString()) }
-
+    ): List<Sessions> {
+        val cachedData = sessionsCache.get(CACHE_DURATION)
+        if (cachedData != null) {
+            return cachedData
+        }
+        val sessions: List<Sessions> = makeRequest("sessions") {
+            sessionKey?.let { parameters.append("session_key", it) }
+            meetingKey?.let { parameters.append("meeting_key", it) }
+            sessionName?.let { parameters.append("session_name", it) }
+            countryName?.let { parameters.append("country_name", it) }
+            circuitShortName?.let { parameters.append("circuit_short_name", it) }
+            year?.let { parameters.append("year", it.toString()) }
+        }
+        sessionsCache.put(sessions)
+        return sessions
     }
 
     override suspend fun getMeetings(
         year: Int?,
         countryName: String?,
         location: String?,
-    ): List<Meetings> = makeRequest("meetings") {
-        year?.let { parameters.append("year", it.toString()) }
-        countryName?.let { parameters.append("country_name", it) }
-        location?.let { parameters.append("location", it) }
+    ): List<Meetings> {
+        val cachedData = meetingsCache.get(CACHE_DURATION)
+        if (cachedData != null) {
+            return cachedData
+        }
+        val meetings: List<Meetings> = makeRequest("meetings") {
+            year?.let { parameters.append("year", it.toString()) }
+            countryName?.let { parameters.append("country_name", it) }
+            location?.let { parameters.append("location", it) }
+        }
+        meetingsCache.put(meetings)
+        return meetings
     }
 
     override fun getPit(
@@ -377,7 +403,17 @@ class F1ApiClient(
     }
 
     override suspend fun refresh() {
-        Cache<Any>().invalidate()
+        carDataCache.invalidate()
+        intervalsCache.invalidate()
+        lapsCache.invalidate()
+        locationsCache.invalidate()
+        pitCache.invalidate()
+        positionCache.invalidate()
+        raceControlCache.invalidate()
+        stintsCache.invalidate()
+        teamRadiosCache.invalidate()
+        weatherCache.invalidate()
+        driverCache.invalidate()
 
     }
 
