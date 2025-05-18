@@ -28,18 +28,14 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun App(
-    sessionKey: String = "latest" , //"10006"
-    meetingKey: String = "latest"    //"1256"
+    sessionKey: String ="latest", // "10006",
+    meetingKey: String ="latest" //"1256"
 ) {
 
-
     val vm = koinViewModel<DataScreenViewModel>()
-
-    val evento by vm.sessionInfo.collectAsStateWithLifecycle()
     val uiState by vm.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = Unit) {
-        vm.getSessionData(sessionKey, meetingKey)
         vm.loadDriverData(sessionKey, meetingKey)
     }
 
@@ -61,7 +57,8 @@ fun App(
                 is DataScreenUIState.Success -> {
 
                     val driverInfoList = (uiState as DataScreenUIState.Success).driverInfoList
-                    val evento = evento.firstOrNull()
+                    val eventInfo = (uiState as DataScreenUIState.Success).eventInfo
+
 
                     Card(
                         modifier = Modifier.fillMaxSize(),
@@ -75,12 +72,11 @@ fun App(
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            if (evento == null) {
-                                PlatforProgressIndicator()
-                            } else{
-                                Header(evento)
-                            }
-
+                            Header(
+                                eventName = eventInfo.eventName,
+                                date = eventInfo.date,
+                                eventType = eventInfo.eventType,
+                            )
                             HorizontalDivider(
                                 thickness = 2.dp,
                                 color = MaterialTheme.colorScheme.primary

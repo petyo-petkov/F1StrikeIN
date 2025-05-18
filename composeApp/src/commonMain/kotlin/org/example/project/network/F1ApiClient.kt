@@ -235,6 +235,7 @@ class F1ApiClient(
         year: Int?,
         countryName: String?,
         location: String?,
+        meetingKey: String?
     ): List<Meetings> {
         val cachedData = meetingsCache.get(CACHE_DURATION)
         if (cachedData != null) {
@@ -244,6 +245,7 @@ class F1ApiClient(
             year?.let { parameters.append("year", it.toString()) }
             countryName?.let { parameters.append("country_name", it) }
             location?.let { parameters.append("location", it) }
+            meetingKey?.let { parameters.append("meeting_key", it) }
         }
         meetingsCache.put(meetings)
         return meetings

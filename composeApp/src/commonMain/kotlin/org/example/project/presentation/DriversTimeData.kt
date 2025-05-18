@@ -78,18 +78,20 @@ fun DriverListItem(driverInfo: DriverInfo) {
 
         Box(
             modifier = Modifier
-                .width(60.dp)
-                .padding(start = 16.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .padding(start = 8.dp)
+                .width(40.dp)
+                .clip(RoundedCornerShape(8.dp))
                 .background(driverInfo.teamColor.toColor()),
             contentAlignment = Alignment.Center
 
         ) {
+
             Text(
                 text = driverInfo.driverName,
                 modifier = Modifier,
+                color = Color.Black,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.Black
+                maxLines = 1
 
             )
         }
@@ -98,7 +100,7 @@ fun DriverListItem(driverInfo: DriverInfo) {
         Text(
             text = driverInfo.interval,
             modifier = Modifier
-                .padding(start = 32.dp)
+                .padding(start = 12.dp)
                 .weight(1f),
             fontWeight = FontWeight.SemiBold
         )
@@ -107,7 +109,7 @@ fun DriverListItem(driverInfo: DriverInfo) {
         Text(
             text = driverInfo.gap,
             modifier = Modifier
-                .padding(start = 32.dp)
+                .padding(start = 12.dp)
                 .weight(1f),
             fontWeight = FontWeight.SemiBold
 

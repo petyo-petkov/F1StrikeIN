@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
@@ -15,7 +16,6 @@ import org.example.project.network.F1ApiClient
 import org.example.project.network.models.Drivers
 import org.example.project.network.models.Intervals
 import org.example.project.network.models.Position
-import org.example.project.network.models.Sessions
 
 class DataScreenViewModel(
     private val apiClient: F1ApiClient
@@ -24,19 +24,6 @@ class DataScreenViewModel(
 
     private val _uiState = MutableStateFlow<DataScreenUIState>(DataScreenUIState.Loading)
     val uiState: StateFlow<DataScreenUIState> = _uiState
-
-    private val _sessionInfo = MutableStateFlow<List<Sessions>>(emptyList())
-    val sessionInfo: StateFlow<List<Sessions>> = _sessionInfo
-
-
-    fun getSessionData(sessionKey: String, meetingKey: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _sessionInfo.value =
-                apiClient.getSessions(sessionKey = sessionKey, meetingKey = meetingKey)
-
-        }
-    }
-
 
     fun loadDriverData(sessionKey: String, meetingKey: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -52,14 +39,30 @@ class DataScreenViewModel(
                 )
 
                 val drivers = apiClient.getDrivers(sessionKey = sessionKey, meetingKey = meetingKey)
+                val meeting =
+                    apiClient.getMeetings(meetingKey = meetingKey)
+                        .firstOrNull()
+                val session =
+                    apiClient.getSessions(sessionKey = sessionKey, meetingKey = meetingKey)
+                        .firstOrNull()
 
+                val eventInfo = EventInfo(
+                    date = session?.date_start ?: "",
+                    eventName = meeting?.meeting_official_name ?: "",
+                    eventType = session?.session_type ?: "",
+                    country = session?.country_name ?: "",
+                    circuit = session?.circuit_short_name ?: ""
+                )
                 combine(
                     intervalsFlow,
                     positionsFlow
                 ) { intervals, positions ->
                     val driverInfoList = processData(drivers, intervals, positions)
 
-                    DataScreenUIState.Success(driverInfoList = driverInfoList)
+                    DataScreenUIState.Success(
+                        driverInfoList = driverInfoList,
+                        eventInfo = eventInfo
+                    )
 
                 }.collect { uiState ->
                     _uiState.update { uiState }
@@ -131,11 +134,9 @@ private fun processData(
     return driverInfoMap.values.toList().sortedBy { it.position }
 }
 
-// Función auxiliar para extraer valores de JsonElement
+
 private fun extractJsonValue(element: JsonElement?): String {
-
     if (element == null) return "-"
-
     return try {
         when {
             element is JsonPrimitive -> element.jsonPrimitive.content
@@ -144,18 +145,19 @@ private fun extractJsonValue(element: JsonElement?): String {
     } catch (e: Exception) {
         "Error extraer los valores del JsonElement: ${e.message}"
     }
-
 }
 
 sealed class DataScreenUIState {
     object Loading : DataScreenUIState()
     data class Error(val message: String) : DataScreenUIState()
     data class Success(
-        val driverInfoList: List<DriverInfo>
+        val driverInfoList: List<DriverInfo>,
+        val eventInfo: EventInfo
     ) : DataScreenUIState()
 
 }
 
+@Serializable
 data class DriverInfo(
     val position: Int = 0,
     val driverName: String = "",
@@ -165,3 +167,11 @@ data class DriverInfo(
     val driverNumber: Int = 0
 )
 
+@Serializable
+data class EventInfo(
+    val date: String = "",
+    val eventName: String = "",
+    val eventType: String = "",
+    val country: String = "",
+    val circuit: String = ""
+)
