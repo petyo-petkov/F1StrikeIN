@@ -28,8 +28,8 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun App(
-    sessionKey: String ="latest", // "10006",
-    meetingKey: String ="latest" //"1256"
+    sessionKey: String = "latest", //"10006",
+    meetingKey: String = "latest" //"1256"
 ) {
 
     val vm = koinViewModel<DataScreenViewModel>()
@@ -63,7 +63,7 @@ fun App(
                     Card(
                         modifier = Modifier.fillMaxSize(),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = BorderStroke(2.dp, color = MaterialTheme.colorScheme.primary),
+                        border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onSurface),
                     ) {
                         Column(
                             modifier = Modifier
@@ -79,7 +79,7 @@ fun App(
                             )
                             HorizontalDivider(
                                 thickness = 2.dp,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.surface
                             )
 
                             DriversTimeData(driverInfoList)

@@ -39,6 +39,7 @@ class DataScreenViewModel(
                 )
 
                 val drivers = apiClient.getDrivers(sessionKey = sessionKey, meetingKey = meetingKey)
+
                 val meeting =
                     apiClient.getMeetings(meetingKey = meetingKey)
                         .firstOrNull()
@@ -82,10 +83,9 @@ private fun processData(
     intervals: List<Intervals>,
     positions: List<Position>
 ): List<DriverInfo> {
-    // Crear un mapa de la información de pilotos por número de piloto
+
     val driverInfoMap = mutableMapOf<Int, DriverInfo>()
 
-    // Primero, procesar los datos de los pilotos
     drivers.forEach { driver ->
         driverInfoMap[driver.driver_number] = DriverInfo(
             driverName = driver.name_acronym,
@@ -94,7 +94,7 @@ private fun processData(
         )
     }
 
-    // Añadir las posiciones (usando la fecha más reciente para cada piloto)
+
     val latestPositions = positions
         .groupBy { it.driver_number }
         .mapValues { (_, posList) ->
@@ -103,34 +103,36 @@ private fun processData(
 
     latestPositions.forEach { (driverNumber, posData) ->
         if (posData != null) {
-            val currentInfo = driverInfoMap[driverNumber] ?: DriverInfo(driverNumber = driverNumber)
-            driverInfoMap[driverNumber] = currentInfo.copy(position = posData.position)
+            driverInfoMap[driverNumber]?.let { currentInfo ->
+                driverInfoMap[driverNumber] = currentInfo.copy(
+                    position = posData.position
+                )
+
+            }
         }
     }
 
-    // Añadir los intervalos (usando la fecha más reciente)
     val latestIntervals = intervals
-        .groupBy { it.driver_number ?: -1 }
+        .groupBy { it.driver_number }
         .mapValues { (_, intList) ->
-            intList.maxByOrNull { it.date ?: "" }
+            intList.maxByOrNull { it.date }
         }
 
     latestIntervals.forEach { (driverNumber, intData) ->
         if (intData != null && driverNumber != -1) {
-            val currentInfo = driverInfoMap[driverNumber] ?: DriverInfo(driverNumber = driverNumber)
+            val currentInfo =
+                driverInfoMap[driverNumber]
+            if (currentInfo != null) {
+                val gap = extractJsonValue(intData.gap_to_leader)
+                val interval = extractJsonValue(intData.interval)
 
-            // Extraer los valores de gap e interval
-            val gap = extractJsonValue(intData.gap_to_leader)
-            val interval = extractJsonValue(intData.interval)
-
-            driverInfoMap[driverNumber] = currentInfo.copy(
-                gap = gap,
-                interval = interval
-            )
+                driverInfoMap[driverNumber] = currentInfo.copy(
+                    gap = gap,
+                    interval = interval
+                )
+            }
         }
     }
-
-    // Convertir a lista y ordenar por posición
     return driverInfoMap.values.toList().sortedBy { it.position }
 }
 
@@ -159,12 +161,12 @@ sealed class DataScreenUIState {
 
 @Serializable
 data class DriverInfo(
-    val position: Int = 0,
+    val position: Int? = null,
     val driverName: String = "",
     val teamColor: String = "",
     val interval: String = "",
     val gap: String = "",
-    val driverNumber: Int = 0
+    val driverNumber: Int
 )
 
 @Serializable
@@ -175,3 +177,11 @@ data class EventInfo(
     val country: String = "",
     val circuit: String = ""
 )
+
+@Serializable
+data class DriverData(
+    val nameAcronym: String,
+    val teamColour: String
+)
+
+

@@ -5,10 +5,10 @@ import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class Intervals(
-    val date: String?,
-    val driver_number: Int?,
-    val gap_to_leader: JsonElement?,
-    val interval: JsonElement?,
-    val meeting_key: Int?,
-    val session_key: Int?
+    val date: String,
+    val driver_number: Int,
+    val gap_to_leader: JsonElement,
+    val interval: JsonElement,
+    val meeting_key: Int,
+    val session_key: Int
 )

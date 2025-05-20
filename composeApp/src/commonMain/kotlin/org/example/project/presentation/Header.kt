@@ -4,7 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,19 +24,24 @@ fun Header(
 
     ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(eventName, fontWeight = W700, textAlign = TextAlign.Center)
-
+        Text(text = eventName, fontWeight = W700, textAlign = TextAlign.Center)
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+        )
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(formatDate(date), fontWeight = W600)
-            Text(eventType, fontWeight = W600)
+            Text(text = formatDate(date), fontWeight = W600)
+            VerticalDivider(
+                modifier = Modifier.height(20.dp),
+            )
+            Text(text = eventType, fontWeight = W600)
         }
 
 

@@ -1,5 +1,34 @@
 package org.example.project.network
 
+import org.example.project.presentation.DriverData
+
+
+object ManualDriverData {
+    val drivers = mapOf(
+        1 to DriverData("VER", "3671C6"),
+        22 to DriverData("TSU", "3671C6"),
+        4 to DriverData("NOR", "FF8000"),
+        81 to DriverData("PIA", "FF8000"),
+        16 to DriverData("LEC", "E80020"),
+        44 to DriverData("HAM", "E80020"),
+        63 to DriverData("RUS", "27F4D2"),
+        12 to DriverData("ANT", "27F4D2"),
+        6 to DriverData("HAD", "6692FF"),
+        30 to DriverData("LAW", "6692FF"),
+        23 to DriverData("ALB", "64C4FF"),
+        55 to DriverData("SAI", "64C4FF"),
+        87 to DriverData("BEA", "B6BABD"),
+        31 to DriverData("OCO", "B6BABD"),
+        14 to DriverData("ALO", "229971"),
+        18 to DriverData("STR", "229971"),
+        10 to DriverData("GAS", "0093CC"),
+        43 to DriverData("COL", "0093CC"),
+        7 to DriverData("DOO", "0093CC"),
+        5 to DriverData("BOR", "52E252"),
+        27 to DriverData("HUL", "52E252"),
+
+        )
+}
 
 private val SESSION_TYPES = mapOf(
     "FP1" to "Practice 1",

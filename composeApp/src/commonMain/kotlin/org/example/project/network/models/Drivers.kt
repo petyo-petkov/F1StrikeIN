@@ -9,7 +9,7 @@ data class Drivers(
     val driver_number: Int,
     val first_name: String,
     val full_name: String,
-    val headshot_url: String,
+    val headshot_url: String? = null,
     val last_name: String,
     val meeting_key: Int,
     val name_acronym: String,

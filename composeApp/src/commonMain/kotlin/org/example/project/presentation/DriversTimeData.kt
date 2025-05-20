@@ -1,7 +1,6 @@
 package org.example.project.presentation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -14,7 +13,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -58,16 +56,10 @@ fun DriverListItem(driverInfo: DriverInfo) {
         Box(
             modifier = Modifier
                 .size(24.dp)
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(16.dp)
-                )
                 .background(Color.Transparent),
             contentAlignment = Alignment.Center
 
         ) {
-
             Text(
                 text = "${driverInfo.position}",
                 modifier = Modifier,
@@ -96,13 +88,13 @@ fun DriverListItem(driverInfo: DriverInfo) {
             )
         }
 
-
         Text(
             text = driverInfo.interval,
             modifier = Modifier
                 .padding(start = 12.dp)
                 .weight(1f),
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1
         )
 
 
@@ -111,7 +103,8 @@ fun DriverListItem(driverInfo: DriverInfo) {
             modifier = Modifier
                 .padding(start = 12.dp)
                 .weight(1f),
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1
 
         )
     }
