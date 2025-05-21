@@ -1,50 +1,77 @@
 package org.example.project.presentation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight.Companion.W600
-import androidx.compose.ui.text.font.FontWeight.Companion.W700
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun Header(
     eventName: String,
     date: String,
     eventType: String,
-
-    ) {
-    Column(
+    onClick: () -> Unit = {}
+) {
+    Card(
         modifier = Modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(text = eventName, fontWeight = W700, textAlign = TextAlign.Center)
-        HorizontalDivider(
-            modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(
+            topStart = 16.dp,
+            topEnd = 16.dp,
+            bottomEnd = 0.dp,
+            bottomStart = 0.dp
+        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(
+            1.dp,
+            color = MaterialTheme.colorScheme.onSurface
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = formatDate(date), fontWeight = W600)
-            VerticalDivider(
-                modifier = Modifier.height(20.dp),
+            Text(text = eventName, fontSize = 24.sp, textAlign = TextAlign.Center)
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
             )
-            Text(text = eventType, fontWeight = W600)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { onClick },
+                    modifier = Modifier
+                ) {
+                    Icon(Icons.Default.Search, contentDescription = "Search")
+                }
+
+                Text(text = formatDate(date), fontSize = 14.sp)
+
+                Text(text = eventType, fontSize = 14.sp)
+            }
+
+
         }
-
-
     }
 
 }
