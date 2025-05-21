@@ -7,11 +7,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -39,31 +39,43 @@ fun App(
         vm.loadDriverData(sessionKey, meetingKey)
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        contentWindowInsets = WindowInsets.safeDrawing,
+    when (uiState) {
+        is DataScreenUIState.Loading -> PlatforProgressIndicator()
+        is DataScreenUIState.Error -> stringResource(Res.string.error_grave)
+        is DataScreenUIState.Success -> {
+            val driverInfoList = (uiState as DataScreenUIState.Success).driverInfoList
+            val eventInfo = (uiState as DataScreenUIState.Success).eventInfo
 
-        ) { paddingValues ->
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                topBar = {
+                    PlatformBottomBar(
+                        event = eventInfo.eventName,
+                        date = eventInfo.date,
+                        eventType = eventInfo.eventType,
+                        onClick = { TODO() }
+                    )
+                },
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center
-        ) {
-            when (uiState) {
-                is DataScreenUIState.Loading -> PlatforProgressIndicator()
-                is DataScreenUIState.Error -> stringResource(Res.string.error_grave)
-                is DataScreenUIState.Success -> {
 
-                    val driverInfoList = (uiState as DataScreenUIState.Success).driverInfoList
-                    val eventInfo = (uiState as DataScreenUIState.Success).eventInfo
+                contentWindowInsets = WindowInsets.safeDrawing,
 
+                ) { paddingValues ->
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
 
                     Card(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onSurface),
+                        border = BorderStroke(
+                            1.dp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        ),
                     ) {
                         Column(
                             modifier = Modifier
@@ -72,28 +84,96 @@ fun App(
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Header(
-                                eventName = eventInfo.eventName,
-                                date = eventInfo.date,
-                                eventType = eventInfo.eventType,
-                            )
-                            HorizontalDivider(
-                                thickness = 2.dp,
-                                color = MaterialTheme.colorScheme.surface
-                            )
+//                            Header(
+//                                eventName = eventInfo.eventName,
+//                                date = eventInfo.date,
+//                                eventType = eventInfo.eventType,
+//                            )
+//                            HorizontalDivider(
+//                                thickness = 2.dp,
+//                                color = MaterialTheme.colorScheme.surface
+//                            )
 
                             DriversTimeData(driverInfoList)
 
                         }
 
+
                     }
+
 
                 }
 
             }
+
+
         }
-
     }
-
-
 }
+
+
+//    Scaffold(
+//        modifier = Modifier.fillMaxSize(),
+//        topBar = { PlatformBottomBar() },
+//
+//
+//        contentWindowInsets = WindowInsets.safeDrawing,
+//
+//        ) { paddingValues ->
+//
+//        Box(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(paddingValues),
+//            contentAlignment = Alignment.Center
+//        ) {
+//            when (uiState) {
+//                is DataScreenUIState.Loading -> PlatforProgressIndicator()
+//                is DataScreenUIState.Error -> stringResource(Res.string.error_grave)
+//                is DataScreenUIState.Success -> {
+//
+//                    val driverInfoList = (uiState as DataScreenUIState.Success).driverInfoList
+//                    val eventInfo = (uiState as DataScreenUIState.Success).eventInfo
+//
+//                    Card(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+//                        border = BorderStroke(
+//                            1.dp,
+//                            color = MaterialTheme.colorScheme.onSurface
+//                        ),
+//                    ) {
+//                        Column(
+//                            modifier = Modifier
+//                                .fillMaxSize()
+//                                .padding(8.dp),
+//                            verticalArrangement = Arrangement.spacedBy(16.dp),
+//                            horizontalAlignment = Alignment.CenterHorizontally
+//                        ) {
+//                            Header(
+//                                eventName = eventInfo.eventName,
+//                                date = eventInfo.date,
+//                                eventType = eventInfo.eventType,
+//                            )
+//                            HorizontalDivider(
+//                                thickness = 2.dp,
+//                                color = MaterialTheme.colorScheme.surface
+//                            )
+//
+//                            DriversTimeData(driverInfoList)
+//
+//                        }
+//
+//
+//                    }
+//
+//
+//                }
+//
+//            }
+//        }
+//
+//
+//    }
+
+

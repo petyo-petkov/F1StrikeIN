@@ -1,7 +1,13 @@
 package org.example.project.network
 
-import org.example.project.presentation.DriverData
+import kotlinx.serialization.Serializable
 
+
+@Serializable
+data class DriverData(
+    val nameAcronym: String,
+    val teamColour: String
+)
 
 object ManualDriverData {
     val drivers = mapOf(

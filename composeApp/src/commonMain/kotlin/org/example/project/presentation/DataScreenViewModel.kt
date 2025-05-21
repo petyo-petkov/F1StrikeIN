@@ -178,10 +178,5 @@ data class EventInfo(
     val circuit: String = ""
 )
 
-@Serializable
-data class DriverData(
-    val nameAcronym: String,
-    val teamColour: String
-)
 
 
