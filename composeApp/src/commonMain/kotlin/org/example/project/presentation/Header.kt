@@ -28,7 +28,7 @@ fun Header(
     eventName: String,
     date: String,
     eventType: String,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier,
@@ -59,7 +59,7 @@ fun Header(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { onClick },
+                    onClick = { onClick() } ,
                     modifier = Modifier
                 ) {
                     Icon(Icons.Default.Search, contentDescription = "Search")

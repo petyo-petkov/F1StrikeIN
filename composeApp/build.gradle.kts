@@ -51,7 +51,7 @@ kotlin {
 
             // Materl3 Desktop + Common
             implementation(libs.androidx.material3.common)
-            implementation("androidx.compose.material:material-icons-core:1.6.8")
+            implementation("androidx.compose.material:material-icons-extended:1.7.8")
 
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
