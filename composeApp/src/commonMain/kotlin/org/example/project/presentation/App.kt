@@ -104,7 +104,7 @@ fun App(
 
                     BottomSheet(
                         showBottomSheet = showBottomSheet,
-                        onDsmiss = {
+                        onDismiss = {
                             showBottomSheet = false
                         },
                         onOKClick = { }
@@ -129,7 +129,7 @@ val raceTypes = listOf("Clasificación", "Carrera", "Sprint")
 @Composable
 fun BottomSheet(
     showBottomSheet: Boolean,
-    onDsmiss: () -> Unit,
+    onDismiss: () -> Unit,
     onOKClick: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -141,7 +141,7 @@ fun BottomSheet(
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = {
-                onDsmiss()
+                onDismiss()
             },
             sheetState = sheetState,
             sheetMaxWidth = 680.dp,
@@ -158,7 +158,9 @@ fun BottomSheet(
                 onRaceTypeSelected = { selectedEventType = it },
                 years = years,
                 circuits = circuits,
-                raceTypes = raceTypes
+                raceTypes = raceTypes,
+                onDismiss = { onDismiss() },
+                onOkClick = { onOKClick() }
             )
 
         }

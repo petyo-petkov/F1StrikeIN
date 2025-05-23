@@ -1,27 +1,28 @@
 package org.example.project.presentation
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 
 @Composable
@@ -34,12 +35,15 @@ fun RaceFilterBottomSheet(
     onRaceTypeSelected: (String) -> Unit,
     years: List<String>,
     circuits: List<String>,
-    raceTypes: List<String>
+    raceTypes: List<String>,
+    onDismiss: () -> Unit,
+    onOkClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         DropdownSelector(
             label = "Año",
@@ -60,11 +64,20 @@ fun RaceFilterBottomSheet(
         Spacer(modifier = Modifier.height(12.dp))
 
         DropdownSelector(
-            label = "Tipo de carrera",
+            label = "Evento",
             options = raceTypes,
             selectedOption = selectedRaceType,
             onOptionSelected = onRaceTypeSelected
         )
+        Button(
+            onClick = {
+                onOkClick()
+                onDismiss()
+            },
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text("OK")
+        }
     }
 }
 
@@ -77,45 +90,46 @@ fun DropdownSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Column {
-        Text(text = label)
-        Box {
-            OutlinedTextField(
-                value = selectedOption,
-                onValueChange = {  },
-                readOnly = true,
-                trailingIcon = {
-                    Icon(
-                        Icons.Default.ArrowDropDown,
-                        contentDescription = "Desplegar opciones",
-                        modifier = Modifier.clickable {
-                            expanded = !expanded
-                        }
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { expanded = true }
+    Column(
+        modifier = Modifier.padding(horizontal = 12.dp),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Top
+    ) {
+
+        Text(label, fontSize = 12.sp)
+
+        OutlinedButton(
+            onClick = { expanded = !expanded },
+            modifier = Modifier.fillMaxWidth(),
+            border = BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primary
             )
 
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier
-            ) {
-                options.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option) },
-                        onClick = {
-                            onOptionSelected(option)
-                            expanded = false
-                        },
-                        contentPadding = PaddingValues(horizontal = 16.dp),
+        ) {
+            Text(selectedOption)
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded = false
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
 
                     )
-                }
             }
         }
     }
 }
+
+
 

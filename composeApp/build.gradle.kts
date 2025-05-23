@@ -38,7 +38,6 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
 
-
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -71,16 +70,20 @@ kotlin {
             implementation(libs.koin.ktor)
             implementation(libs.koin.logger.slf4j)
 
+
             commonTest.dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlin.test.junit)
                 implementation(libs.junit)
                 implementation(libs.androidx.test.junit)
                 implementation(libs.androidx.espresso.core)
+                implementation("androidx.tracing:tracing:1.3.0")
             }
 
 
         }
+
+
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
@@ -88,11 +91,11 @@ kotlin {
             //Material3 Desktop + Common
             implementation(libs.androidx.material3.common)
 
-
-
         }
+
     }
 }
+
 
 android {
     namespace = "org.example.project"
