@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -22,30 +21,61 @@ class DataScreenViewModel(
 ) : ViewModel() {
 
 
-    private val _uiState = MutableStateFlow<DataScreenUIState>(DataScreenUIState.Loading)
+    private val _uiState = MutableStateFlow<DataScreenUIState>(DataScreenUIState.Idle)
     val uiState: StateFlow<DataScreenUIState> = _uiState
 
-    fun loadDriverData(sessionKey: String, meetingKey: String) {
+    fun Refresh() {
+        loadDriverData(
+            sessionKey = "latest",
+            meetingKey = "latest",
+            year = null,
+            circuit = null,
+            event = null
+        )
+    }
+
+
+    fun loadDriverData(
+        sessionKey: String? = null,
+        meetingKey: String? = null,
+        year: Int? = null,
+        circuit: String? = null,
+        event: String? = null
+    ) {
+        println("RECOMPONIEDO ------------------------- LOADDRIVERDATA")
+        _uiState.value = DataScreenUIState.Loading
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val intervalsFlow = apiClient.getIntervals(
+                val session = apiClient.getSessions(
                     sessionKey = sessionKey,
-                    meetingKey = meetingKey
+                    meetingKey = meetingKey,
+                    year = year,
+                    circuitShortName = circuit,
+                    sessionName = event
+                ).firstOrNull()
+
+                val actualSessionKey = session?.session_key.toString()
+                val actualMeetingKey = session?.meeting_key.toString()
+
+                val intervalsFlow = apiClient.getIntervals(
+                    sessionKey = actualSessionKey,
+                    meetingKey = actualMeetingKey
                 )
 
                 val positionsFlow = apiClient.getPosition(
-                    sessionKey = sessionKey,
-                    meetingKey = meetingKey
+                    sessionKey = actualSessionKey,
+                    meetingKey = actualMeetingKey
                 )
 
-                val drivers = apiClient.getDrivers(sessionKey = sessionKey, meetingKey = meetingKey)
+                val drivers = apiClient.getDrivers(
+                    sessionKey = actualSessionKey,
+                    meetingKey = actualMeetingKey
+                )
 
                 val meeting =
-                    apiClient.getMeetings(meetingKey = meetingKey)
+                    apiClient.getMeetings(meetingKey = actualMeetingKey)
                         .firstOrNull()
-                val session =
-                    apiClient.getSessions(sessionKey = sessionKey, meetingKey = meetingKey)
-                        .firstOrNull()
+
 
                 val eventInfo = EventInfo(
                     date = session?.date_start ?: "",
@@ -54,6 +84,7 @@ class DataScreenViewModel(
                     country = session?.country_name ?: "",
                     circuit = session?.circuit_short_name ?: ""
                 )
+
                 combine(
                     intervalsFlow,
                     positionsFlow
@@ -66,17 +97,16 @@ class DataScreenViewModel(
                     )
 
                 }.collect { uiState ->
-                    _uiState.update { uiState }
+                    _uiState.value = uiState
                 }
 
             } catch (e: Exception) {
-                _uiState.update {
-                    DataScreenUIState.Error(e.message ?: "Error al cargar los datos")
-                }
+                _uiState.value = DataScreenUIState.Error(e.message ?: "Error al cargar los datos")
             }
         }
     }
 }
+
 
 private fun processData(
     drivers: List<Drivers>,
@@ -141,6 +171,7 @@ private fun extractJsonValue(element: JsonElement?): String {
     if (element == null) return "-"
     return try {
         when {
+            element is JsonPrimitive && element.isString -> element.content
             element is JsonPrimitive -> element.jsonPrimitive.content
             else -> element.toString()
         }
@@ -150,6 +181,7 @@ private fun extractJsonValue(element: JsonElement?): String {
 }
 
 sealed class DataScreenUIState {
+    object Idle : DataScreenUIState()
     object Loading : DataScreenUIState()
     data class Error(val message: String) : DataScreenUIState()
     data class Success(
@@ -161,7 +193,7 @@ sealed class DataScreenUIState {
 
 @Serializable
 data class DriverInfo(
-    val position: Int? = null,
+    val position: Int? = -1,
     val driverName: String = "",
     val teamColor: String = "",
     val interval: String = "",

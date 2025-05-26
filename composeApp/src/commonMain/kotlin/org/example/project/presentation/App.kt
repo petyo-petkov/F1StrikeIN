@@ -30,24 +30,24 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import f1strikein.composeapp.generated.resources.Res
 import f1strikein.composeapp.generated.resources.error_grave
+import org.example.project.network.circuits
+import org.example.project.network.eventTypes
+import org.example.project.network.years
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun App(
-    sessionKey: String = "latest", //"10006",
-    meetingKey: String = "latest" //"1256"
-) {
-
+fun App() {
+    println("RECOMPONIEDO ------------------------- APP()")
     val vm = koinViewModel<DataScreenViewModel>()
     val uiState by vm.uiState.collectAsStateWithLifecycle()
 
     var showBottomSheet by remember { mutableStateOf(false) }
 
-
     LaunchedEffect(key1 = Unit) {
-        vm.loadDriverData(sessionKey, meetingKey)
+        println("RECOMPONIEDO ------------------------- LaunchedEffect")
+        vm.loadDriverData(sessionKey = "latest", meetingKey = "latest")
     }
 
     Scaffold(
@@ -56,114 +56,145 @@ fun App(
 
         ) { paddingValues ->
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
             contentAlignment = Alignment.Center
-        ){
-        when (uiState) {
-            is DataScreenUIState.Loading -> PlatforProgressIndicator()
-            is DataScreenUIState.Error -> stringResource(Res.string.error_grave)
-            is DataScreenUIState.Success -> {
-                val driverInfoList = (uiState as DataScreenUIState.Success).driverInfoList
-                val eventInfo = (uiState as DataScreenUIState.Success).eventInfo
+        ) {
+            when (val currentState = uiState) {
+                is DataScreenUIState.Idle -> {
+                    println("RECOMPONIEDO ------------------------- IDLE")
+                    "Esperando datos..."
+                }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                is DataScreenUIState.Loading -> {
+                    println("RECOMPONIEDO ------------------------- LOADING")
+                    PlatforProgressIndicator()
+                }
 
-                    Header(
-                        eventName = eventInfo.eventName,
-                        date = eventInfo.date,
-                        eventType = eventInfo.eventType,
-                        onClick = {
-                            showBottomSheet = true
-                        }
-                    )
+                is DataScreenUIState.Error -> {
+                    println("RECOMPONIEDO ------------------------- ERROR")
+                    stringResource(Res.string.error_grave)
+                }
 
-                    Card(
+                is DataScreenUIState.Success -> {
+                    println("RECOMPONIEDO ------------------------- SUCCESS")
+                    val eventInfo = currentState.eventInfo
+                    val driverInfoList = currentState.driverInfoList
+
+                    Column(
                         modifier = Modifier
-                            .weight(1f),
-                        shape = RoundedCornerShape(
-                            topStart = 0.dp,
-                            topEnd = 0.dp,
-                            bottomEnd = 16.dp,
-                            bottomStart = 16.dp
-                        ),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = BorderStroke(
-                            1.dp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
+                            .fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        DriversTimeData(driverInfoList)
+
+                        Header(
+                            eventName = eventInfo?.eventName ,
+                            date = eventInfo.date,
+                            eventType = eventInfo.eventType,
+                            onClick = {
+                                showBottomSheet = true
+                            }
+                        )
+
+                        Card(
+                            modifier = Modifier
+                                .weight(1f),
+                            shape = RoundedCornerShape(
+                                topStart = 0.dp,
+                                topEnd = 0.dp,
+                                bottomEnd = 16.dp,
+                                bottomStart = 16.dp
+                            ),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(
+                                1.dp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                        ) {
+                            DriversTimeData(driverInfoList)
+
+                        }
+
 
                     }
 
-                    BottomSheet(
-                        showBottomSheet = showBottomSheet,
-                        onDismiss = {
-                            showBottomSheet = false
-                        },
-                        onOKClick = { }
-                    )
-
                 }
 
+
             }
-
-
         }
-    }
+        if (showBottomSheet) {
+            BottomSheet(
+                onDismiss = {
+                    showBottomSheet = false
+                },
+                onOKClick = { year, circuit, event ->
+                    vm.loadDriverData(
+                        year = year,
+                        circuit = circuit,
+                        event = event
+                    )
+                },
+                onRefreshClick = {
+                    vm.Refresh()
+                }
+            )
+        }
     }
 }
 
-val years = listOf("2023", "2024", "2025")
-val circuits = listOf("Monza", "Suzuka", "Spa")
-val raceTypes = listOf("Clasificación", "Carrera", "Sprint")
+
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheet(
-    showBottomSheet: Boolean,
     onDismiss: () -> Unit,
-    onOKClick: () -> Unit
+    onOKClick: (year: Int, circuit: String, event: String) -> Unit,
+    onRefreshClick: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
 
-    var selectedYear by remember { mutableStateOf("Selecciona una opción") }
+    var selectedYear by remember { mutableStateOf("2025") }
     var selectedCircuit by remember { mutableStateOf("Selecciona una opción") }
     var selectedEventType by remember { mutableStateOf("Selecciona una opción") }
 
-    if (showBottomSheet) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                onDismiss()
+
+    ModalBottomSheet(
+        onDismissRequest = {
+            onDismiss()
+        },
+        sheetState = sheetState,
+        sheetMaxWidth = 680.dp,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        scrimColor = Color.Transparent,
+    ) {
+
+        RaceFilterBottomSheet(
+            selectedYear = selectedYear,
+            onYearSelected = { selectedYear = it },
+            selectedCircuit = selectedCircuit,
+            onCircuitSelected = { selectedCircuit = it },
+            selectedRaceType = selectedEventType,
+            onRaceTypeSelected = { selectedEventType = it },
+            years = years,
+            circuits = circuits,
+            raceTypes = eventTypes,
+            onDismiss = { onDismiss() },
+            onOkClick = {
+                onOKClick(
+                    selectedYear.toInt(),
+                    selectedCircuit,
+                    selectedEventType
+                )
             },
-            sheetState = sheetState,
-            sheetMaxWidth = 680.dp,
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            scrimColor = Color.Transparent,
-        ) {
+            onRefreshClick = { onRefreshClick() }
+        )
 
-            RaceFilterBottomSheet(
-                selectedYear = selectedYear,
-                onYearSelected = { selectedYear = it },
-                selectedCircuit = selectedCircuit,
-                onCircuitSelected = { selectedCircuit = it },
-                selectedRaceType = selectedEventType,
-                onRaceTypeSelected = { selectedEventType = it },
-                years = years,
-                circuits = circuits,
-                raceTypes = raceTypes,
-                onDismiss = { onDismiss() },
-                onOkClick = { onOKClick() }
-            )
-
-        }
     }
+
 }
 

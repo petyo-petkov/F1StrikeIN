@@ -2,7 +2,47 @@ package org.example.project.network
 
 import kotlinx.serialization.Serializable
 
+val years = listOf("2023", "2024", "2025")
 
+val eventTypes = listOf(
+    // "Practice 1",
+    //  "Practice 2",
+    // "Practice 3",
+    // "Qualifying",
+    // "Sprint Qualifying",
+    "Sprint",
+    "Race"
+)
+
+val circuits = listOf(
+    "Sakhir",
+    "Jeddah",
+    "Melbourne",
+    "Suzuka",
+    "Shanghai",
+    "Miami",
+    "Imola",
+    "Monaco",
+    "Barcelona",
+    "Montreal",
+    "Spielberg",
+    "Silverstone",
+    "Hungaroring",
+    "Spa",
+    "Zandvoort",
+    "Monza",
+    "Baku",
+    "Singapore",
+    "Austin",
+    "MexicoCity",
+    "Interlagos",
+    "LasVegas",
+    "Lusail",
+    "YasMarina"
+)
+
+
+/*
 @Serializable
 data class DriverData(
     val nameAcronym: String,
@@ -36,7 +76,7 @@ object ManualDriverData {
         )
 }
 
-private val SESSION_TYPES = mapOf(
+val SESSION_TYPES = mapOf(
     "FP1" to "Practice 1",
     "FP2" to "Practice 2",
     "FP3" to "Practice 3",
@@ -77,3 +117,5 @@ enum class Circuitos(val nombreOficial: String, val pais: String, val codigoApi:
         return codigoApi
     }
 }
+
+ */

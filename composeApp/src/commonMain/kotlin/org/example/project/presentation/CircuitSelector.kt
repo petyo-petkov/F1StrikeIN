@@ -4,9 +4,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -37,7 +39,8 @@ fun RaceFilterBottomSheet(
     circuits: List<String>,
     raceTypes: List<String>,
     onDismiss: () -> Unit,
-    onOkClick: () -> Unit
+    onOkClick: () -> Unit,
+    onRefreshClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -52,7 +55,7 @@ fun RaceFilterBottomSheet(
             onOptionSelected = onYearSelected
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         DropdownSelector(
             label = "Circuito",
@@ -61,7 +64,7 @@ fun RaceFilterBottomSheet(
             onOptionSelected = onCircuitSelected
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         DropdownSelector(
             label = "Evento",
@@ -69,14 +72,28 @@ fun RaceFilterBottomSheet(
             selectedOption = selectedRaceType,
             onOptionSelected = onRaceTypeSelected
         )
-        Button(
-            onClick = {
-                onOkClick()
-                onDismiss()
-            },
-            modifier = Modifier.padding(8.dp)
+        Row(
+            modifier = Modifier,
+            horizontalArrangement = Arrangement.End
         ) {
-            Text("OK")
+            Button(
+                onClick = {
+                    onOkClick()
+                    onDismiss()
+                },
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Text("OK")
+            }
+            Button(
+                onClick = {
+                    onRefreshClick()
+                    onDismiss()
+                },
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Text("Refresh")
+            }
         }
     }
 }
@@ -113,7 +130,8 @@ fun DropdownSelector(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier
+            modifier = Modifier.heightIn(max = 300.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
