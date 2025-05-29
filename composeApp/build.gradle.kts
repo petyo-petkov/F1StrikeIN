@@ -30,7 +30,7 @@ kotlin {
             implementation(libs.androidx.appcompat)
             implementation(libs.androidx.core.ktx)
 
-            implementation(libs.androidx.material3)
+            implementation(libs.androidx.material3.android)
             implementation(libs.androidx.material3.window.size.class1)
             implementation(libs.androidx.material3.adaptive.navigation.suite)
 
@@ -47,10 +47,9 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(libs.androidx.material.icons.extended)
 
-            // Materl3 Desktop + Common
-            implementation(libs.androidx.material3.common)
-            implementation("androidx.compose.material:material-icons-extended:1.7.8")
+            implementation(libs.androidx.material3)
 
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
@@ -87,9 +86,7 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
-
-            //Material3 Desktop + Common
-            implementation(libs.androidx.material3.common)
+            implementation(libs.androidx.material3.desktop)
 
         }
 

@@ -7,12 +7,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -39,15 +43,13 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
-    println("RECOMPONIEDO ------------------------- APP()")
     val vm = koinViewModel<DataScreenViewModel>()
     val uiState by vm.uiState.collectAsStateWithLifecycle()
-
+    val eventInfo by vm.eventInfo.collectAsStateWithLifecycle()
     var showBottomSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = Unit) {
-        println("RECOMPONIEDO ------------------------- LaunchedEffect")
-        vm.loadDriverData(sessionKey = "latest", meetingKey = "latest")
+        vm.loadLiveDriverData()
     }
 
     Scaffold(
@@ -62,26 +64,11 @@ fun App() {
             contentAlignment = Alignment.Center
         ) {
             when (val currentState = uiState) {
-                is DataScreenUIState.Idle -> {
-                    println("RECOMPONIEDO ------------------------- IDLE")
-                    "Esperando datos..."
-                }
-
-                is DataScreenUIState.Loading -> {
-                    println("RECOMPONIEDO ------------------------- LOADING")
-                    PlatforProgressIndicator()
-                }
-
-                is DataScreenUIState.Error -> {
-                    println("RECOMPONIEDO ------------------------- ERROR")
-                    stringResource(Res.string.error_grave)
-                }
-
+                is DataScreenUIState.Idle -> "Esperando datos..."
+                is DataScreenUIState.Loading -> PlatforProgressIndicator()
+                is DataScreenUIState.Error -> stringResource(Res.string.error_grave)
                 is DataScreenUIState.Success -> {
-                    println("RECOMPONIEDO ------------------------- SUCCESS")
-                    val eventInfo = currentState.eventInfo
                     val driverInfoList = currentState.driverInfoList
-
                     Column(
                         modifier = Modifier
                             .fillMaxSize(),
@@ -90,7 +77,7 @@ fun App() {
                     ) {
 
                         Header(
-                            eventName = eventInfo?.eventName ,
+                            eventName = eventInfo.eventName,
                             date = eventInfo.date,
                             eventType = eventInfo.eventType,
                             onClick = {
@@ -113,7 +100,20 @@ fun App() {
                                 color = MaterialTheme.colorScheme.onSurface
                             ),
                         ) {
-                            DriversTimeData(driverInfoList)
+                            driverInfoList.let { drivers ->
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxWidth()
+                                        .padding(top = 8.dp, bottom = 12.dp),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    items(drivers, key = { it.driverNumber }) { driverInfo ->
+                                        DriverListItem(driverInfo)
+                                        HorizontalDivider()
+                                    }
+                                }
+                            }
+
 
                         }
 
@@ -131,22 +131,20 @@ fun App() {
                     showBottomSheet = false
                 },
                 onOKClick = { year, circuit, event ->
-                    vm.loadDriverData(
+                    vm.loadStaticDriverData(
                         year = year,
                         circuit = circuit,
                         event = event
                     )
                 },
                 onRefreshClick = {
-                    vm.Refresh()
+                    vm.refreshData()
                 }
             )
         }
     }
+
 }
-
-
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)

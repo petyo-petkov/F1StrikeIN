@@ -3,6 +3,7 @@ package org.example.project.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -24,65 +25,50 @@ class DataScreenViewModel(
     private val _uiState = MutableStateFlow<DataScreenUIState>(DataScreenUIState.Idle)
     val uiState: StateFlow<DataScreenUIState> = _uiState
 
-    fun Refresh() {
-        loadDriverData(
-            sessionKey = "latest",
-            meetingKey = "latest",
-            year = null,
-            circuit = null,
-            event = null
-        )
-    }
+    private val _eventInfo = MutableStateFlow(EventInfo())
+    val eventInfo: StateFlow<EventInfo> = _eventInfo
+
+    private var realtimeDataJob: Job? = null
+    private var staticDataJob: Job? = null
 
 
-    fun loadDriverData(
-        sessionKey: String? = null,
-        meetingKey: String? = null,
-        year: Int? = null,
-        circuit: String? = null,
-        event: String? = null
-    ) {
-        println("RECOMPONIEDO ------------------------- LOADDRIVERDATA")
+    fun loadLiveDriverData() {
         _uiState.value = DataScreenUIState.Loading
-        viewModelScope.launch(Dispatchers.IO) {
+        realtimeDataJob?.cancel()
+        staticDataJob?.cancel()
+        realtimeDataJob = viewModelScope.launch(Dispatchers.IO) {
             try {
-                val session = apiClient.getSessions(
-                    sessionKey = sessionKey,
-                    meetingKey = meetingKey,
-                    year = year,
-                    circuitShortName = circuit,
-                    sessionName = event
-                ).firstOrNull()
 
+                val session = apiClient.getSessions("latest", "latest").firstOrNull()
                 val actualSessionKey = session?.session_key.toString()
                 val actualMeetingKey = session?.meeting_key.toString()
 
-                val intervalsFlow = apiClient.getIntervals(
-                    sessionKey = actualSessionKey,
+                val staticMeeting = apiClient.getMeetings(
                     meetingKey = actualMeetingKey
+                ).firstOrNull()
+
+                _eventInfo.value = EventInfo(
+                    date = session?.date_start ?: "",
+                    eventName = staticMeeting?.meeting_official_name ?: "",
+                    eventType = session?.session_type ?: "",
+                    country = session?.country_name ?: "",
+                    circuit = session?.circuit_short_name ?: ""
                 )
 
-                val positionsFlow = apiClient.getPosition(
-                    sessionKey = actualSessionKey,
-                    meetingKey = actualMeetingKey
-                )
 
                 val drivers = apiClient.getDrivers(
                     sessionKey = actualSessionKey,
                     meetingKey = actualMeetingKey
                 )
 
-                val meeting =
-                    apiClient.getMeetings(meetingKey = actualMeetingKey)
-                        .firstOrNull()
+                val intervalsFlow = apiClient.getIntervalsFlow(
+                    sessionKey = actualSessionKey,
+                    meetingKey = actualMeetingKey
+                )
 
-
-                val eventInfo = EventInfo(
-                    date = session?.date_start ?: "",
-                    eventName = meeting?.meeting_official_name ?: "",
-                    eventType = session?.session_type ?: "",
-                    country = session?.country_name ?: "",
-                    circuit = session?.circuit_short_name ?: ""
+                val positionsFlow = apiClient.getPositionFlow(
+                    sessionKey = actualSessionKey,
+                    meetingKey = actualMeetingKey
                 )
 
                 combine(
@@ -93,7 +79,6 @@ class DataScreenViewModel(
 
                     DataScreenUIState.Success(
                         driverInfoList = driverInfoList,
-                        eventInfo = eventInfo
                     )
 
                 }.collect { uiState ->
@@ -104,6 +89,71 @@ class DataScreenViewModel(
                 _uiState.value = DataScreenUIState.Error(e.message ?: "Error al cargar los datos")
             }
         }
+    }
+
+    fun loadStaticDriverData(
+        year: Int? = null,
+        circuit: String? = null,
+        event: String? = null
+    ) {
+        _uiState.value = DataScreenUIState.Loading
+        staticDataJob?.cancel()
+        realtimeDataJob?.cancel()
+        staticDataJob = viewModelScope.launch(Dispatchers.IO) {
+
+            val session = apiClient.getSessions(
+                year = year,
+                circuitShortName = circuit,
+                sessionName = event
+            ).lastOrNull()
+
+            val actualSessionKey = session?.session_key.toString()
+            val actualMeetingKey = session?.meeting_key.toString()
+
+            val staticMeeting = apiClient.getMeetings(
+                meetingKey = actualMeetingKey
+            ).firstOrNull()
+
+            _eventInfo.value = EventInfo(
+                date = session?.date_start ?: "",
+                eventName = staticMeeting?.meeting_official_name ?: "",
+                eventType = session?.session_type ?: "",
+                country = session?.country_name ?: "",
+                circuit = session?.circuit_short_name ?: ""
+            )
+
+            val drivers = apiClient.getDrivers(
+                sessionKey = actualSessionKey,
+                meetingKey = actualMeetingKey
+            )
+            val intervals = apiClient.getStaticIntervals(
+                sessionKey = actualSessionKey,
+                meetingKey = actualMeetingKey
+            )
+            val positions = apiClient.getStaticPosition(
+                sessionKey = actualSessionKey,
+                meetingKey = actualMeetingKey
+            )
+            val driverInfoList = processData(drivers, intervals, positions)
+            _uiState.value = DataScreenUIState.Success(
+                driverInfoList = driverInfoList,
+            )
+
+        }
+
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        realtimeDataJob?.cancel()
+        staticDataJob?.cancel()
+    }
+
+    fun refreshData() {
+        realtimeDataJob?.cancel()
+        staticDataJob?.cancel()
+       loadStaticDriverData()
+
     }
 }
 
@@ -185,8 +235,7 @@ sealed class DataScreenUIState {
     object Loading : DataScreenUIState()
     data class Error(val message: String) : DataScreenUIState()
     data class Success(
-        val driverInfoList: List<DriverInfo>,
-        val eventInfo: EventInfo
+        val driverInfoList: List<DriverInfo>
     ) : DataScreenUIState()
 
 }

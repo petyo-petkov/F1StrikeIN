@@ -8,11 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,30 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import f1strikein.composeapp.generated.resources.Res
-import f1strikein.composeapp.generated.resources.error_driver_data
-import org.jetbrains.compose.resources.stringResource
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DriversTimeData(
-    drivers: List<DriverInfo>?
-) {
-
-    drivers?.let { drivers ->
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 12.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            items(drivers, key = { it.driverNumber }) { driverInfo ->
-                DriverListItem(driverInfo)
-                HorizontalDivider()
-            }
-        }
-    } ?: stringResource(Res.string.error_driver_data)
-
-}
 
 @Composable
 fun DriverListItem(driverInfo: DriverInfo) {

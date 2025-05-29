@@ -129,7 +129,7 @@ class F1ApiClient(
     }
 
 
-    override fun getIntervals(
+    override fun getIntervalsFlow(
         sessionKey: String?,
         meetingKey: String?,
         driverNumber: Int?,
@@ -154,6 +154,26 @@ class F1ApiClient(
             delay(DELAY_TIME)
 
         }
+    }
+
+    override suspend fun getStaticIntervals(
+        sessionKey: String?,
+        meetingKey: String?,
+        driverNumber: Int?
+    ): List<Intervals> {
+
+        val cacheData = intervalsCache.get(CACHE_DURATION)
+        if (cacheData != null) {
+            return cacheData
+        }
+        val intervals: List<Intervals> = makeRequest("intervals") {
+            sessionKey?.let { parameters.append("session_key", it) }
+            meetingKey?.let { parameters.append("meeting_key", it) }
+            driverNumber?.let { parameters.append("driver_number", it.toString()) }
+        }
+        intervalsCache.put(intervals)
+        return intervals
+
     }
 
     override fun getLaps(
@@ -280,7 +300,7 @@ class F1ApiClient(
     }
 
 
-    override fun getPosition(
+    override fun getPositionFlow(
         driverNumber: Int?, sessionKey: String?, meetingKey: String?
     ): Flow<List<Position>> = flow {
         while (coroutineContext.isActive) {
@@ -303,6 +323,25 @@ class F1ApiClient(
             delay(DELAY_TIME)
 
         }
+    }
+
+    override suspend fun getStaticPosition(
+        driverNumber: Int?,
+        sessionKey: String?,
+        meetingKey: String?
+    ): List<Position> {
+        val cachedData = positionCache.get(CACHE_DURATION)
+        if (cachedData != null) {
+            return cachedData
+        }
+        val position: List<Position> = makeRequest("position") {
+            sessionKey?.let { parameters.append("session_key", it) }
+            meetingKey?.let { parameters.append("meeting_key", it) }
+            driverNumber?.let { parameters.append("driver_number", it.toString()) }
+
+        }
+        positionCache.put(position)
+        return position
     }
 
     override fun getRaceControl(
