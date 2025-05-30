@@ -1,7 +1,5 @@
 package org.example.project.network
 
-import kotlinx.serialization.Serializable
-
 val years = listOf("2023", "2024", "2025")
 
 val eventTypes = listOf(
@@ -22,23 +20,23 @@ val circuits = listOf(
     "Shanghai",
     "Miami",
     "Imola",
-    "Monaco",
-    "Barcelona",
+    "Monte Carlo",
+    "Catalunya",
     "Montreal",
     "Spielberg",
     "Silverstone",
     "Hungaroring",
-    "Spa",
+    "Spa-Francorchamps",
     "Zandvoort",
     "Monza",
     "Baku",
     "Singapore",
     "Austin",
-    "MexicoCity",
+    "Mexico City",
     "Interlagos",
-    "LasVegas",
+    "Las Vegas",
     "Lusail",
-    "YasMarina"
+    "Yas Marina Circuit"
 )
 
 

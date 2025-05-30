@@ -21,7 +21,6 @@ class DataScreenViewModel(
     private val apiClient: F1ApiClient
 ) : ViewModel() {
 
-
     private val _uiState = MutableStateFlow<DataScreenUIState>(DataScreenUIState.Idle)
     val uiState: StateFlow<DataScreenUIState> = _uiState
 
@@ -31,11 +30,11 @@ class DataScreenViewModel(
     private var realtimeDataJob: Job? = null
     private var staticDataJob: Job? = null
 
-
     fun loadLiveDriverData() {
-        _uiState.value = DataScreenUIState.Loading
+
         realtimeDataJob?.cancel()
         staticDataJob?.cancel()
+        _uiState.value = DataScreenUIState.Loading
         realtimeDataJob = viewModelScope.launch(Dispatchers.IO) {
             try {
 
@@ -43,13 +42,13 @@ class DataScreenViewModel(
                 val actualSessionKey = session?.session_key.toString()
                 val actualMeetingKey = session?.meeting_key.toString()
 
-                val staticMeeting = apiClient.getMeetings(
+                val meeting= apiClient.getMeetings(
                     meetingKey = actualMeetingKey
                 ).firstOrNull()
 
                 _eventInfo.value = EventInfo(
                     date = session?.date_start ?: "",
-                    eventName = staticMeeting?.meeting_official_name ?: "",
+                    eventName = meeting?.meeting_official_name ?: "",
                     eventType = session?.session_type ?: "",
                     country = session?.country_name ?: "",
                     circuit = session?.circuit_short_name ?: ""
@@ -86,7 +85,8 @@ class DataScreenViewModel(
                 }
 
             } catch (e: Exception) {
-                _uiState.value = DataScreenUIState.Error(e.message ?: "Error al cargar los datos")
+                _uiState.value = DataScreenUIState.Error(e.message ?:
+                "Error al cargar los datos en tiempo real")
             }
         }
     }
@@ -96,48 +96,53 @@ class DataScreenViewModel(
         circuit: String? = null,
         event: String? = null
     ) {
-        _uiState.value = DataScreenUIState.Loading
         staticDataJob?.cancel()
         realtimeDataJob?.cancel()
+        _uiState.value = DataScreenUIState.Loading
         staticDataJob = viewModelScope.launch(Dispatchers.IO) {
 
-            val session = apiClient.getSessions(
-                year = year,
-                circuitShortName = circuit,
-                sessionName = event
-            ).lastOrNull()
+            try {
+                val session = apiClient.getSessions(
+                    year = year,
+                    circuiShortName = circuit,
+                    sessionName = event
+                ).lastOrNull()
 
-            val actualSessionKey = session?.session_key.toString()
-            val actualMeetingKey = session?.meeting_key.toString()
+                val actualSessionKey = session?.session_key.toString()
+                val actualMeetingKey = session?.meeting_key.toString()
 
-            val staticMeeting = apiClient.getMeetings(
-                meetingKey = actualMeetingKey
-            ).firstOrNull()
+                val staticMeeting = apiClient.getMeetings(
+                    meetingKey = actualMeetingKey
+                ).firstOrNull()
 
-            _eventInfo.value = EventInfo(
-                date = session?.date_start ?: "",
-                eventName = staticMeeting?.meeting_official_name ?: "",
-                eventType = session?.session_type ?: "",
-                country = session?.country_name ?: "",
-                circuit = session?.circuit_short_name ?: ""
-            )
+                _eventInfo.value = EventInfo(
+                    date = session?.date_start ?: "",
+                    eventName = staticMeeting?.meeting_official_name ?: "",
+                    eventType = session?.session_type ?: "",
+                    country = session?.country_name ?: "",
+                    circuit = session?.circuit_short_name ?: ""
+                )
 
-            val drivers = apiClient.getDrivers(
-                sessionKey = actualSessionKey,
-                meetingKey = actualMeetingKey
-            )
-            val intervals = apiClient.getStaticIntervals(
-                sessionKey = actualSessionKey,
-                meetingKey = actualMeetingKey
-            )
-            val positions = apiClient.getStaticPosition(
-                sessionKey = actualSessionKey,
-                meetingKey = actualMeetingKey
-            )
-            val driverInfoList = processData(drivers, intervals, positions)
-            _uiState.value = DataScreenUIState.Success(
-                driverInfoList = driverInfoList,
-            )
+                val drivers = apiClient.getDrivers(
+                    sessionKey = actualSessionKey,
+                    meetingKey = actualMeetingKey
+                )
+                val intervals = apiClient.getStaticIntervals(
+                    sessionKey = actualSessionKey,
+                    meetingKey = actualMeetingKey
+                )
+                val positions = apiClient.getStaticPosition(
+                    sessionKey = actualSessionKey,
+                    meetingKey = actualMeetingKey
+                )
+                val driverInfoList = processData(drivers, intervals, positions)
+                _uiState.value = DataScreenUIState.Success(
+                    driverInfoList = driverInfoList,
+                )
+            }catch (e: Exception) {
+                _uiState.value = DataScreenUIState.Error(e.message ?:
+                "Error al cargar los datos estaticos")
+            }
 
         }
 

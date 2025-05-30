@@ -19,7 +19,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun DriverListItem(driverInfo: DriverInfo) {
+fun DriverListItem(
+    position: String,
+    teamColor: String,
+    driverName: String,
+    interval: String,
+    gap: String,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -35,9 +41,9 @@ fun DriverListItem(driverInfo: DriverInfo) {
 
         ) {
             Text(
-                text = "${driverInfo.position}",
+                text = position,
                 modifier = Modifier,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.SemiBold
             )
 
         }
@@ -47,13 +53,13 @@ fun DriverListItem(driverInfo: DriverInfo) {
                 .padding(start = 8.dp)
                 .width(40.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(driverInfo.teamColor.toColor()),
+                .background(teamColor.toColor()),
             contentAlignment = Alignment.Center
 
         ) {
 
             Text(
-                text = driverInfo.driverName,
+                text = driverName,
                 modifier = Modifier,
                 color = Color.Black,
                 fontWeight = FontWeight.SemiBold,
@@ -63,7 +69,7 @@ fun DriverListItem(driverInfo: DriverInfo) {
         }
 
         Text(
-            text = driverInfo.interval,
+            text = interval,
             modifier = Modifier
                 .padding(start = 12.dp)
                 .weight(1f),
@@ -73,7 +79,7 @@ fun DriverListItem(driverInfo: DriverInfo) {
 
 
         Text(
-            text = driverInfo.gap,
+            text = gap,
             modifier = Modifier
                 .padding(start = 12.dp)
                 .weight(1f),

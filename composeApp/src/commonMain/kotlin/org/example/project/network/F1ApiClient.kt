@@ -233,7 +233,7 @@ class F1ApiClient(
         meetingKey: String?,
         sessionName: String?,
         countryName: String?,
-        circuitShortName: String?,
+        circuiShortName: String?,
         year: Int?
     ): List<Sessions> {
         val cachedData = sessionsCache.get(CACHE_DURATION)
@@ -245,7 +245,7 @@ class F1ApiClient(
             meetingKey?.let { parameters.append("meeting_key", it) }
             sessionName?.let { parameters.append("session_name", it) }
             countryName?.let { parameters.append("country_name", it) }
-            circuitShortName?.let { parameters.append("circuit_short_name", it) }
+            circuiShortName?.let { parameters.append("circuit_short_name", it) }
             year?.let { parameters.append("year", it.toString()) }
         }
         sessionsCache.put(sessions)

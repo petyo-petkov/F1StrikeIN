@@ -51,6 +51,8 @@ kotlin {
 
             implementation(libs.androidx.material3)
 
+            implementation(("androidx.compose:compose-bom:2025.05.01"))
+
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
 

@@ -5,11 +5,14 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +23,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,9 +62,7 @@ fun App() {
 
         ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
             when (val currentState = uiState) {
@@ -70,11 +72,12 @@ fun App() {
                 is DataScreenUIState.Success -> {
                     val driverInfoList = currentState.driverInfoList
                     Column(
-                        modifier = Modifier
-                            .fillMaxSize(),
+                        modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
+
+                        // Info del Evnto......................................................
 
                         Header(
                             eventName = eventInfo.eventName,
@@ -82,12 +85,10 @@ fun App() {
                             eventType = eventInfo.eventType,
                             onClick = {
                                 showBottomSheet = true
-                            }
-                        )
+                            })
 
                         Card(
-                            modifier = Modifier
-                                .weight(1f),
+                            modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(
                                 topStart = 0.dp,
                                 topEnd = 0.dp,
@@ -96,10 +97,29 @@ fun App() {
                             ),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             border = BorderStroke(
-                                1.dp,
-                                color = MaterialTheme.colorScheme.onSurface
+                                1.dp, color = MaterialTheme.colorScheme.onSurface
                             ),
                         ) {
+
+                            //Driver position, team color, driver name........................
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                            ) {
+                                Spacer(modifier = Modifier.width(80.dp))
+
+                                Text(
+                                    text = "Interval",
+                                    modifier = Modifier.padding(start = 8.dp).weight(1f)
+                                )
+
+                                Text(
+                                    text = "Gap",
+                                    modifier = Modifier.padding(start = 8.dp).weight(1f)
+                                )
+
+                            }
                             driverInfoList.let { drivers ->
                                 LazyColumn(
                                     modifier = Modifier.fillMaxWidth()
@@ -108,7 +128,13 @@ fun App() {
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     items(drivers, key = { it.driverNumber }) { driverInfo ->
-                                        DriverListItem(driverInfo)
+                                        DriverListItem(
+                                            position = driverInfo.position.toString(),
+                                            teamColor = driverInfo.teamColor,
+                                            driverName = driverInfo.driverName,
+                                            interval = driverInfo.interval,
+                                            gap = driverInfo.gap
+                                        )
                                         HorizontalDivider()
                                     }
                                 }
@@ -129,17 +155,12 @@ fun App() {
             BottomSheet(
                 onDismiss = {
                     showBottomSheet = false
-                },
-                onOKClick = { year, circuit, event ->
+                }, onOKClick = { year, circuit, event ->
                     vm.loadStaticDriverData(
-                        year = year,
-                        circuit = circuit,
-                        event = event
+                        year = year, circuit = circuit, event = event
                     )
                 },
-                onRefreshClick = {
-                    vm.refreshData()
-                }
+                onRefreshClick = vm::refreshData
             )
         }
     }
@@ -184,13 +205,10 @@ fun BottomSheet(
             onDismiss = { onDismiss() },
             onOkClick = {
                 onOKClick(
-                    selectedYear.toInt(),
-                    selectedCircuit,
-                    selectedEventType
+                    selectedYear.toInt(), selectedCircuit, selectedEventType
                 )
             },
-            onRefreshClick = { onRefreshClick() }
-        )
+            onRefreshClick = { onRefreshClick() })
 
     }
 
