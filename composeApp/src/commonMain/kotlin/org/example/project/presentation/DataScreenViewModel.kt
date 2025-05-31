@@ -28,21 +28,34 @@ class DataScreenViewModel(
     val eventInfo: StateFlow<EventInfo> = _eventInfo
 
     private var realtimeDataJob: Job? = null
-    private var staticDataJob: Job? = null
 
-    fun loadLiveDriverData() {
+    init {
+        loadLiveDriverData()
+    }
 
-        realtimeDataJob?.cancel()
-        staticDataJob?.cancel()
+    fun loadLiveDriverData(
+        sessionKey: String? = "latest",
+        meetingKey: String? = "latest",
+        year: Int? = null,
+        circuit: String? = null,
+        event: String? = null
+    ) {
         _uiState.value = DataScreenUIState.Loading
+        realtimeDataJob?.cancel()
+
         realtimeDataJob = viewModelScope.launch(Dispatchers.IO) {
             try {
-
-                val session = apiClient.getSessions("latest", "latest").firstOrNull()
+                val session = apiClient.getSessions(
+                    sessionKey = sessionKey,
+                    meetingKey = meetingKey,
+                    year = year,
+                    circuiShortName = circuit,
+                    sessionName = event
+                ).firstOrNull()
                 val actualSessionKey = session?.session_key.toString()
                 val actualMeetingKey = session?.meeting_key.toString()
 
-                val meeting= apiClient.getMeetings(
+                val meeting = apiClient.getMeetings(
                     meetingKey = actualMeetingKey
                 ).firstOrNull()
 
@@ -85,80 +98,21 @@ class DataScreenViewModel(
                 }
 
             } catch (e: Exception) {
-                _uiState.value = DataScreenUIState.Error(e.message ?:
-                "Error al cargar los datos en tiempo real")
+                _uiState.value = DataScreenUIState.Error(
+                    e.message ?: "Error al cargar los datos en tiempo real"
+                )
             }
         }
-    }
-
-    fun loadStaticDriverData(
-        year: Int? = null,
-        circuit: String? = null,
-        event: String? = null
-    ) {
-        staticDataJob?.cancel()
-        realtimeDataJob?.cancel()
-        _uiState.value = DataScreenUIState.Loading
-        staticDataJob = viewModelScope.launch(Dispatchers.IO) {
-
-            try {
-                val session = apiClient.getSessions(
-                    year = year,
-                    circuiShortName = circuit,
-                    sessionName = event
-                ).lastOrNull()
-
-                val actualSessionKey = session?.session_key.toString()
-                val actualMeetingKey = session?.meeting_key.toString()
-
-                val staticMeeting = apiClient.getMeetings(
-                    meetingKey = actualMeetingKey
-                ).firstOrNull()
-
-                _eventInfo.value = EventInfo(
-                    date = session?.date_start ?: "",
-                    eventName = staticMeeting?.meeting_official_name ?: "",
-                    eventType = session?.session_type ?: "",
-                    country = session?.country_name ?: "",
-                    circuit = session?.circuit_short_name ?: ""
-                )
-
-                val drivers = apiClient.getDrivers(
-                    sessionKey = actualSessionKey,
-                    meetingKey = actualMeetingKey
-                )
-                val intervals = apiClient.getStaticIntervals(
-                    sessionKey = actualSessionKey,
-                    meetingKey = actualMeetingKey
-                )
-                val positions = apiClient.getStaticPosition(
-                    sessionKey = actualSessionKey,
-                    meetingKey = actualMeetingKey
-                )
-                val driverInfoList = processData(drivers, intervals, positions)
-                _uiState.value = DataScreenUIState.Success(
-                    driverInfoList = driverInfoList,
-                )
-            }catch (e: Exception) {
-                _uiState.value = DataScreenUIState.Error(e.message ?:
-                "Error al cargar los datos estaticos")
-            }
-
-        }
-
     }
 
     override fun onCleared() {
         super.onCleared()
         realtimeDataJob?.cancel()
-        staticDataJob?.cancel()
     }
 
     fun refreshData() {
         realtimeDataJob?.cancel()
-        staticDataJob?.cancel()
-       loadStaticDriverData()
-
+        loadLiveDriverData()
     }
 }
 

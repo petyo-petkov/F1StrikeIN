@@ -36,12 +36,6 @@ interface F1Api {
         driverNumber: Int? = null,
     ): Flow<List<Intervals>>
 
-    suspend fun getStaticIntervals(
-        sessionKey: String? = null,
-        meetingKey: String? = null,
-        driverNumber: Int? = null,
-    ): List<Intervals>
-
     fun getLaps(
         sessionKey: String? = null,
         meetingKey: String? = null,
@@ -83,12 +77,6 @@ interface F1Api {
         sessionKey: String? = null,
         meetingKey: String? = null,
     ): Flow<List<Position>>
-
-    suspend fun getStaticPosition(
-        driverNumber: Int? = null,
-        sessionKey: String? = null,
-        meetingKey: String? = null,
-    ): List<Position>
 
     fun getRaceControl(
         driverNumber: Int? = null,

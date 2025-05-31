@@ -26,7 +26,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,10 +50,6 @@ fun App() {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     val eventInfo by vm.eventInfo.collectAsStateWithLifecycle()
     var showBottomSheet by remember { mutableStateOf(false) }
-
-    LaunchedEffect(key1 = Unit) {
-        vm.loadLiveDriverData()
-    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -156,8 +151,12 @@ fun App() {
                 onDismiss = {
                     showBottomSheet = false
                 }, onOKClick = { year, circuit, event ->
-                    vm.loadStaticDriverData(
-                        year = year, circuit = circuit, event = event
+                    vm.loadLiveDriverData(
+                        sessionKey = null,
+                        meetingKey = null,
+                        year = year,
+                        circuit = circuit,
+                        event = event
                     )
                 },
                 onRefreshClick = vm::refreshData
